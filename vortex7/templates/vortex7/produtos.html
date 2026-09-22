@@ -1,0 +1,56 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Produtos | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <span>Produtos</span></p>
+    <h1>{% if busca %}Resultados para "{{ busca }}"{% else %}Todos os Produtos{% endif %}</h1>
+  </div>
+</section>
+
+<section class="catalog-section">
+  <div class="container catalog-layout">
+    <aside class="catalog-filters">
+      <h3>Categorias</h3>
+      <ul class="filter-list">
+        <li><a href="{{ url_for('vortex7.produtos', q=busca) }}" class="{% if not categoria_ativa %}active{% endif %}">Todas</a></li>
+        {% for c in categories %}
+        <li><a href="{{ url_for('vortex7.produtos', categoria=c['slug'], q=busca) }}" class="{% if categoria_ativa==c['slug'] %}active{% endif %}">{{ c['name'] }}</a></li>
+        {% endfor %}
+      </ul>
+    </aside>
+
+    <div class="catalog-main">
+      <div class="catalog-toolbar">
+        <span class="results-count">{{ products|length }} produto(s)</span>
+        <form class="sort-form" method="get">
+          {% if busca %}<input type="hidden" name="q" value="{{ busca }}">{% endif %}
+          {% if categoria_ativa %}<input type="hidden" name="categoria" value="{{ categoria_ativa }}">{% endif %}
+          <label for="ordenar">Ordenar por</label>
+          <select name="ordenar" id="ordenar" onchange="this.form.submit()">
+            <option value="relevancia" {% if ordenar=='relevancia' %}selected{% endif %}>Relevância</option>
+            <option value="menor_preco" {% if ordenar=='menor_preco' %}selected{% endif %}>Menor preço</option>
+            <option value="maior_preco" {% if ordenar=='maior_preco' %}selected{% endif %}>Maior preço</option>
+            <option value="avaliacao" {% if ordenar=='avaliacao' %}selected{% endif %}>Melhor avaliação</option>
+            <option value="nome" {% if ordenar=='nome' %}selected{% endif %}>Nome A-Z</option>
+          </select>
+        </form>
+      </div>
+
+      {% if products %}
+      <div class="products-grid">
+        {% for p in products %}
+          {% include "vortex7/_product_card.html" %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>Nenhum produto encontrado.</p>
+        <a href="{{ url_for('vortex7.produtos') }}" class="btn btn-outline">Limpar filtros</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

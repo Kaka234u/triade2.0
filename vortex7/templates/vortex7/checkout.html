@@ -1,0 +1,94 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Finalizar Compra | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <a href="{{ url_for('vortex7.carrinho') }}">Carrinho</a> / <span>Checkout</span></p>
+    <h1>Finalizar Compra</h1>
+    <p>Versão demonstrativa — nenhum pagamento real é processado.</p>
+  </div>
+</section>
+
+<section class="checkout-section">
+  <div class="container checkout-layout">
+    <form method="post" action="{{ url_for('vortex7.checkout_confirmar') }}" class="checkout-form">
+
+      <div class="checkout-block">
+        <h3><span class="checkout-step">1</span> Forma de Envio</h3>
+        <label class="checkout-option">
+          <input type="radio" name="envio" value="pac" checked>
+          <div>
+            <strong>PAC</strong>
+            <span>Entrega em {{ frete.pac_days }} dias úteis</span>
+          </div>
+          <strong class="checkout-option-price">{% if frete.frete_gratis %}GRÁTIS{% else %}R$ {{ frete.pac_price|brl }}{% endif %}</strong>
+        </label>
+        <label class="checkout-option">
+          <input type="radio" name="envio" value="sedex">
+          <div>
+            <strong>SEDEX</strong>
+            <span>Entrega em {{ frete.sedex_days }} dias úteis</span>
+          </div>
+          <strong class="checkout-option-price">R$ {{ frete.sedex_price|brl }}</strong>
+        </label>
+      </div>
+
+      <div class="checkout-block">
+        <h3><span class="checkout-step">2</span> Forma de Pagamento</h3>
+        <label class="checkout-option">
+          <input type="radio" name="pagamento" value="pix" checked>
+          <div>
+            <strong>Pix</strong>
+            <span>Aprovação imediata, 5% de desconto</span>
+          </div>
+          <span class="checkout-badge">RECOMENDADO</span>
+        </label>
+        <label class="checkout-option">
+          <input type="radio" name="pagamento" value="cartao">
+          <div>
+            <strong>Cartão de Crédito</strong>
+            <span>Em até 3x sem juros</span>
+          </div>
+        </label>
+        <label class="checkout-option">
+          <input type="radio" name="pagamento" value="boleto">
+          <div>
+            <strong>Boleto Bancário</strong>
+            <span>Compensação em até 2 dias úteis</span>
+          </div>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">CONFIRMAR PEDIDO</button>
+      <p class="checkout-disclaimer">Ao confirmar, você simula a finalização de um pedido de demonstração da VORTEX 7. Nenhuma cobrança será feita.</p>
+    </form>
+
+    <aside class="cart-summary checkout-summary">
+      <h3>Resumo</h3>
+      {% for item in items %}
+      <div class="checkout-item-row">
+        <img src="{{ url_for('vortex7.static', filename='images/products/' ~ item.product['image']) }}" alt="{{ item.product['name'] }}">
+        <div>
+          <span>{{ item.product['name'] }}</span>
+          <span class="checkout-item-qty">Qtd: {{ item.qty }}</span>
+        </div>
+        <strong>R$ {{ item.line_total|brl }}</strong>
+      </div>
+      {% endfor %}
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>R$ {{ subtotal|brl }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Frete (PAC)</span>
+        <span>{% if frete.frete_gratis %}Grátis{% else %}R$ {{ frete.pac_price|brl }}{% endif %}</span>
+      </div>
+      <div class="summary-row summary-total">
+        <span>Total estimado</span>
+        <span>R$ {{ (subtotal + (0 if frete.frete_gratis else frete.pac_price))|brl }}</span>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

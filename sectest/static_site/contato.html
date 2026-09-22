@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contato | SecTest</title>
+<meta name="description" content="Entre em contato com a equipe da SecTest para tirar dúvidas ou solicitar uma proposta de segurança digital para sua empresa.">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Pular para o conteúdo</a>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#g1)"/>
+        <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <defs><linearGradient id="g1" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+      </svg>
+      <span>SecTest</span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <ul class="nav-list">
+        <li><a href="index.html" class="nav-link">Início</a></li>
+        <li><a href="sobre.html" class="nav-link">Sobre</a></li>
+        <li><a href="servicos.html" class="nav-link">Serviços</a></li>
+        <li><a href="cadastro.html" class="nav-link">Cadastro</a></li>
+        <li><a href="contato.html" class="nav-link">Contato</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a href="cadastro.html" class="btn btn-primary nav-cta">Solicitar diagnóstico</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="mainNav">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-header container">
+    <span class="page-header-eyebrow">Fale com a gente</span>
+    <h1 class="page-header-title">Entre em contato</h1>
+    <p class="page-header-text">Tire suas dúvidas, peça uma proposta ou converse com nosso time comercial. Respondemos em até 2 dias úteis.</p>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="contact-grid">
+
+        <div class="panel form-card reveal">
+          <form id="contatoForm" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="contatoNome">Nome <span class="required">*</span></label>
+              <input class="form-input" type="text" id="contatoNome" name="nome" required>
+              <span class="form-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contatoEmail">E-mail <span class="required">*</span></label>
+              <input class="form-input" type="email" id="contatoEmail" name="email" required>
+              <span class="form-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contatoAssunto">Assunto <span class="required">*</span></label>
+              <select class="form-select" id="contatoAssunto" name="assunto" required>
+                <option value="">Selecione...</option>
+                <option value="comercial">Proposta comercial</option>
+                <option value="suporte">Suporte</option>
+                <option value="parceria">Parceria</option>
+                <option value="outro">Outro assunto</option>
+              </select>
+              <span class="form-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contatoMensagem">Mensagem <span class="required">*</span></label>
+              <textarea class="form-textarea" id="contatoMensagem" name="mensagem" required></textarea>
+              <span class="form-error"></span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Enviar mensagem</button>
+          </form>
+
+          <div id="contatoSuccess" class="form-success hidden">
+            <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div>
+            <h3>Mensagem enviada!</h3>
+            <p>Recebemos sua mensagem e retornaremos em até 2 dias úteis.</p>
+            <a href="index.html" class="btn btn-outline">Voltar à página inicial</a>
+          </div>
+        </div>
+
+        <div class="contact-info">
+          <div class="panel info-item reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg></div>
+            <div>
+              <h4>Endereço</h4>
+              <p>Av. Paulista, 1000 — Ceará, SP</p>
+            </div>
+          </div>
+          <div class="panel info-item reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h3l2 5-2.5 1.5a11 11 0 005 5L15 12l5 2v3a2 2 0 01-2 2C9.5 19 5 14.5 5 5a2 2 0 011-2z"/></svg></div>
+            <div>
+              <h4>Telefone</h4>
+              <p>(11) 4000-1234</p>
+            </div>
+          </div>
+          <div class="panel info-item reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 6l8 7 8-7"/></svg></div>
+            <div>
+              <h4>E-mail</h4>
+              <p>contato@SecTest.com.br</p>
+            </div>
+          </div>
+          <div class="panel info-item reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+            <div>
+              <h4>Horário de atendimento</h4>
+              <p>Segunda a sexta, das 9h às 18h</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container" style="max-width: 780px;">
+      <div class="section-header reveal">
+        <span class="section-eyebrow">Dúvidas frequentes</span>
+        <h2 class="section-title">Perguntas que recebemos com frequência</h2>
+      </div>
+
+      <details class="panel faq-item reveal">
+        <summary>Quanto tempo leva para receber um diagnóstico?</summary>
+        <p>Normalmente entramos em contato em até 2 dias úteis após o envio do cadastro, para agendar uma conversa inicial gratuita.</p>
+      </details>
+      <details class="panel faq-item reveal">
+        <summary>A SecTest atende empresas de qualquer porte?</summary>
+        <p>Sim. Trabalhamos com pequenas, médias e grandes empresas, adaptando o escopo do serviço à realidade de cada negócio.</p>
+      </details>
+      <details class="panel faq-item reveal">
+        <summary>Como funciona o monitoramento 24 horas?</summary>
+        <p>Nossa central acompanha a infraestrutura do cliente continuamente, identificando e alertando sobre atividades suspeitas em tempo real.</p>
+      </details>
+      <details class="panel faq-item reveal">
+        <summary>Vocês ajudam com a adequação à LGPD?</summary>
+        <p>Sim. Auxiliamos desde o mapeamento dos dados tratados até a criação de políticas de privacidade e o treinamento das equipes.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#gf)"/>
+          <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <defs><linearGradient id="gf" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+        </svg>
+        <span>SecTest</span>
+      </a>
+      <p>Segurança digital empresarial de ponta a ponta, unindo tecnologia, processos e pessoas.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Navegação</h4>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="contato.html">Contato</a></li>
+      </ul>
+    </div>
+    <div class="footer-links">
+      <h4>Serviços</h4>
+      <ul>
+        <li><a href="servicos.html#consultoria">Consultoria</a></li>
+        <li><a href="servicos.html#lgpd">Proteção de Dados</a></li>
+        <li><a href="servicos.html#monitoramento">Monitoramento</a></li>
+        <li><a href="servicos.html#incidentes">Resposta a Incidentes</a></li>
+      </ul>
+    </div>
+    <div class="footer-contact">
+      <h4>Contato</h4>
+      <p>contato@SecTest.com.br</p>
+      <p>(11) 4000-1234</p>
+      <p>Ceará — SP, Brasil</p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; <span id="year"></span> SecTest. Projeto fictício desenvolvido para fins acadêmicos.</p>
+    <a href="admin.html" class="footer-admin-link">Acesso administrativo</a>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

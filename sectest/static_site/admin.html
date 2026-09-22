@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo | SecTest</title>
+<meta name="description" content="Painel administrativo interno da SecTest (ambiente de demonstração).">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Pular para o conteúdo</a>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#g1)"/>
+        <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <defs><linearGradient id="g1" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+      </svg>
+      <span>SecTest</span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <ul class="nav-list">
+        <li><a href="index.html" class="nav-link">Início</a></li>
+        <li><a href="sobre.html" class="nav-link">Sobre</a></li>
+        <li><a href="servicos.html" class="nav-link">Serviços</a></li>
+        <li><a href="cadastro.html" class="nav-link">Cadastro</a></li>
+        <li><a href="contato.html" class="nav-link">Contato</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a href="cadastro.html" class="btn btn-primary nav-cta">Solicitar diagnóstico</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="mainNav">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Tela de login (demonstração) -->
+  <section class="admin-shell" id="adminLogin">
+    <div class="panel login-card">
+      <div class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#gl)"/>
+          <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <defs><linearGradient id="gl" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+        </svg>
+        <span>SecTest</span>
+      </div>
+      <h1>Painel administrativo</h1>
+      <p>Acesso restrito à equipe SecTest.</p>
+
+      <form id="adminLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="adminUser">Usuário</label>
+          <input class="form-input" type="text" id="adminUser" name="adminUser" required autocomplete="username">
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="adminPass">Senha</label>
+          <input class="form-input" type="password" id="adminPass" name="adminPass" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        <p class="login-error" id="loginError" aria-live="polite"></p>
+      </form>
+
+      <div class="login-demo-note">
+        Ambiente de demonstração acadêmica — este projeto não possui back-end. Utilize usuário <code>admin</code> e senha <code>admin123</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- Painel (visível após o login) -->
+  <section class="dashboard hidden" id="adminDashboard">
+    <div class="container">
+      <div class="dashboard-header">
+        <div>
+          <h1>Bem-vindo(a) de volta</h1>
+          <p>Cadastros recebidos pelo site — dados fictícios para demonstração.</p>
+        </div>
+        <button class="btn btn-outline" id="logoutBtn">Sair</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="panel stat-card">
+          <div class="stat-number" id="statTotal">0</div>
+          <div class="stat-label">Total de cadastros</div>
+        </div>
+        <div class="panel stat-card">
+          <div class="stat-number" id="statWeek">0</div>
+          <div class="stat-label">Novos esta semana</div>
+        </div>
+        <div class="panel stat-card">
+          <div class="stat-number" id="statMessages">0</div>
+          <div class="stat-label">Mensagens em aberto</div>
+        </div>
+        <div class="panel stat-card">
+          <div class="stat-number" id="statActive">0</div>
+          <div class="stat-label">Empresas ativas</div>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input class="form-input search-input" type="text" id="tableSearch" placeholder="Buscar por empresa, responsável ou serviço...">
+        </div>
+      </div>
+
+      <div class="panel table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Responsável</th>
+              <th>E-mail</th>
+              <th>Serviço de interesse</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="registrationsTableBody"></tbody>
+        </table>
+      </div>
+
+      <p class="admin-note">Observação: por se tratar de um projeto apenas de front-end (sem banco de dados), os registros acima são fictícios e usados somente para demonstrar a interface do painel.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#gf)"/>
+          <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <defs><linearGradient id="gf" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+        </svg>
+        <span>SecTest</span>
+      </a>
+      <p>Segurança digital empresarial de ponta a ponta, unindo tecnologia, processos e pessoas.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Navegação</h4>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="contato.html">Contato</a></li>
+      </ul>
+    </div>
+    <div class="footer-links">
+      <h4>Serviços</h4>
+      <ul>
+        <li><a href="servicos.html#consultoria">Consultoria</a></li>
+        <li><a href="servicos.html#lgpd">Proteção de Dados</a></li>
+        <li><a href="servicos.html#monitoramento">Monitoramento</a></li>
+        <li><a href="servicos.html#incidentes">Resposta a Incidentes</a></li>
+      </ul>
+    </div>
+    <div class="footer-contact">
+      <h4>Contato</h4>
+      <p>contato@SecTest.com.br</p>
+      <p>(11) 4000-1234</p>
+      <p>Ceará — CE, Brasil</p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; <span id="year"></span> SecTest. Projeto fictício desenvolvido para fins acadêmicos.</p>
+    <a href="admin.html" class="footer-admin-link">Acesso administrativo</a>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

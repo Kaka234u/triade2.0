@@ -1,0 +1,104 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Carrinho | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <span>Carrinho</span></p>
+    <h1>Meu Carrinho</h1>
+  </div>
+</section>
+
+<section class="cart-section">
+  <div class="container">
+    {% if items %}
+    <div class="cart-layout">
+      <div class="cart-items">
+        {% for item in items %}
+        <div class="cart-item">
+          <a href="{{ url_for('vortex7.produto', product_id=item.product['id']) }}" class="cart-item-img">
+            <img src="{{ url_for('vortex7.static', filename='images/products/' ~ item.product['image']) }}" alt="{{ item.product['name'] }}">
+          </a>
+          <div class="cart-item-info">
+            <a href="{{ url_for('vortex7.produto', product_id=item.product['id']) }}" class="cart-item-name">{{ item.product['name'] }}</a>
+            <p class="cart-item-variant">
+              {% if item.size %}Tamanho: {{ item.size }}{% endif %}
+              {% if item.size and item.color %} · {% endif %}
+              {% if item.color %}Cor: {{ item.color }}{% endif %}
+            </p>
+            <p class="cart-item-price">R$ {{ item.unit_price|brl }}</p>
+
+            <div class="cart-item-actions">
+              <form action="{{ url_for('vortex7.atualizar_carrinho', key=item.key) }}" method="post" class="qty-selector qty-selector-sm">
+                <button type="submit" name="quantidade" value="{{ item.qty - 1 if item.qty > 1 else 1 }}" class="qty-btn" aria-label="Diminuir">−</button>
+                <input type="number" value="{{ item.qty }}" readonly>
+                <button type="submit" name="quantidade" value="{{ item.qty + 1 }}" class="qty-btn" aria-label="Aumentar">+</button>
+              </form>
+              <form action="{{ url_for('vortex7.remover_carrinho', key=item.key) }}" method="post">
+                <button type="submit" class="cart-remove-btn">Remover</button>
+              </form>
+            </div>
+          </div>
+          <div class="cart-item-total">R$ {{ item.line_total|brl }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <aside class="cart-summary">
+        <h3>Calcular Frete</h3>
+        <form action="{{ url_for('vortex7.calcular_frete_route') }}" method="post" class="frete-form">
+          <input type="text" name="cep" placeholder="Digite seu CEP" maxlength="9" required
+                 value="{{ session.get('frete', {}).get('cep', '') }}">
+          <button type="submit" class="btn btn-outline">CALCULAR</button>
+        </form>
+
+        {% if session.get('frete') %}
+        {% set frete = session.get('frete') %}
+        <div class="frete-options">
+          <label class="frete-option">
+            <input type="radio" name="frete_preview" checked disabled>
+            <span>PAC — {{ frete.pac_days }} dias úteis</span>
+            <strong>{% if frete.frete_gratis %}GRÁTIS{% else %}R$ {{ frete.pac_price|brl }}{% endif %}</strong>
+          </label>
+          <label class="frete-option">
+            <input type="radio" name="frete_preview" disabled>
+            <span>SEDEX — {{ frete.sedex_days }} dias úteis</span>
+            <strong>R$ {{ frete.sedex_price|brl }}</strong>
+          </label>
+        </div>
+        {% if frete.frete_gratis %}
+        <p class="frete-free-note">🎉 Você ganhou frete grátis nesta compra!</p>
+        {% endif %}
+        {% endif %}
+
+        <h3 class="summary-title-spaced">Resumo do Pedido</h3>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>R$ {{ subtotal|brl }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Frete</span>
+          {% if session.get('frete') %}
+          <span class="summary-free">{% if session.get('frete').frete_gratis %}Grátis{% else %}A partir de R$ {{ session.get('frete').pac_price|brl }}{% endif %}</span>
+          {% else %}
+          <span class="summary-free">Calcule ao lado</span>
+          {% endif %}
+        </div>
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>R$ {{ subtotal|brl }}{% if session.get('frete') and not session.get('frete').frete_gratis %} + frete{% endif %}</span>
+        </div>
+        <a href="{{ url_for('vortex7.checkout') }}" class="btn btn-primary btn-lg btn-block">FINALIZAR COMPRA</a>
+        <a href="{{ url_for('vortex7.produtos') }}" class="continue-shopping">← Continuar comprando</a>
+      </aside>
+    </div>
+    {% else %}
+    <div class="empty-state empty-cart">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.4a2 2 0 002 1.6h8.4a2 2 0 002-1.6L21 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="21" r="1.4" fill="currentColor"/><circle cx="18" cy="21" r="1.4" fill="currentColor"/></svg>
+      <p>Seu carrinho está vazio.</p>
+      <a href="{{ url_for('vortex7.produtos') }}" class="btn btn-primary">EXPLORAR PRODUTOS</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

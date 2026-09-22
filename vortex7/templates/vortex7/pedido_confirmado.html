@@ -1,0 +1,23 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Pedido Confirmado | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="confirmation-section">
+  <div class="confirmation-card">
+    <div class="confirmation-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+    </div>
+    <h1>Pedido Confirmado!</h1>
+    <p class="confirmation-order">Número do pedido: <strong>{{ pedido.numero }}</strong></p>
+    <p class="confirmation-text">
+      Esta é uma simulação da VORTEX 7 (V1) — nenhum pagamento foi processado.
+      Forma de envio escolhida: <strong>{{ 'SEDEX' if pedido.envio == 'sedex' else 'PAC' }}</strong>.
+      Forma de pagamento: <strong>{{ {'pix':'Pix', 'cartao':'Cartão de Crédito', 'boleto':'Boleto Bancário'}[pedido.pagamento] }}</strong>.
+    </p>
+    <div class="confirmation-actions">
+      <a href="{{ url_for('vortex7.produtos') }}" class="btn btn-primary btn-lg">CONTINUAR COMPRANDO</a>
+      <a href="{{ url_for('vortex7.index') }}" class="btn btn-outline btn-lg">VOLTAR AO INÍCIO</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

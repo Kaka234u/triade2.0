@@ -1,0 +1,39 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Criar Conta | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="auth-card">
+    <img src="{{ url_for('vortex7.static', filename='images/logo/logo.jpg') }}" alt="VORTEX 7" class="auth-logo">
+    <h1>Criar minha conta</h1>
+    <p class="auth-subtitle">Junte-se à VORTEX 7 e leve sua performance mais longe.</p>
+
+    <form method="post" class="auth-form">
+      <div class="form-group">
+        <label for="name">Nome completo</label>
+        <input type="text" id="name" name="name" value="{{ name or '' }}" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Telefone / WhatsApp <span class="form-optional">(opcional)</span></label>
+        <input type="tel" id="phone" name="phone" value="{{ phone or '' }}" placeholder="(00) 00000-0000">
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" required minlength="6">
+        <span class="form-hint">Mínimo de 6 caracteres.</span>
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirmar senha</label>
+        <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg btn-block">CRIAR CONTA</button>
+    </form>
+
+    <p class="auth-switch">Já tem uma conta? <a href="{{ url_for('vortex7.login') }}">Entrar</a></p>
+  </div>
+</section>
+{% endblock %}

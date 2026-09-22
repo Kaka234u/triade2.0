@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro | SecTest</title>
+<meta name="description" content="Cadastre sua empresa e receba um diagnóstico gratuito de segurança digital da equipe SecTest.">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Pular para o conteúdo</a>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#g1)"/>
+        <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <defs><linearGradient id="g1" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+      </svg>
+      <span>SecTest</span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <ul class="nav-list">
+        <li><a href="index.html" class="nav-link">Início</a></li>
+        <li><a href="sobre.html" class="nav-link">Sobre</a></li>
+        <li><a href="servicos.html" class="nav-link">Serviços</a></li>
+        <li><a href="cadastro.html" class="nav-link">Cadastro</a></li>
+        <li><a href="contato.html" class="nav-link">Contato</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a href="cadastro.html" class="btn btn-primary nav-cta">Solicitar diagnóstico</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="mainNav">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page-header container">
+    <span class="page-header-eyebrow">Vamos começar</span>
+    <h1 class="page-header-title">Cadastre sua empresa</h1>
+    <p class="page-header-text">Preencha o formulário abaixo e nossa equipe entrará em contato para apresentar um diagnóstico gratuito de segurança digital para o seu negócio.</p>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container" style="max-width: 820px;">
+      <div class="panel form-card reveal">
+
+        <form id="cadastroForm" novalidate>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label" for="empresa">Nome da empresa <span class="required">*</span></label>
+              <input class="form-input" type="text" id="empresa" name="empresa" required>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cnpj">CNPJ <span class="mono" style="color: var(--color-fog); font-weight: 500;">(opcional)</span></label>
+              <input class="form-input" type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="funcionarios">Número de funcionários <span class="required">*</span></label>
+              <select class="form-select" id="funcionarios" name="funcionarios" required>
+                <option value="">Selecione...</option>
+                <option value="1-10">1 a 10</option>
+                <option value="11-50">11 a 50</option>
+                <option value="51-200">51 a 200</option>
+                <option value="200+">Mais de 200</option>
+              </select>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="responsavel">Nome do responsável <span class="required">*</span></label>
+              <input class="form-input" type="text" id="responsavel" name="responsavel" required>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">E-mail corporativo <span class="required">*</span></label>
+              <input class="form-input" type="email" id="email" name="email" required>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label" for="telefone">Telefone <span class="required">*</span></label>
+              <input class="form-input" type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+              <span class="form-error"></span>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">Serviços de interesse <span class="mono" style="color: var(--color-fog); font-weight: 500;">(opcional)</span></label>
+              <div class="checkbox-grid">
+                <label class="checkbox-item"><input type="checkbox" name="servicos" value="Consultoria"> Consultoria em Segurança</label>
+                <label class="checkbox-item"><input type="checkbox" name="servicos" value="LGPD"> Proteção de Dados / LGPD</label>
+                <label class="checkbox-item"><input type="checkbox" name="servicos" value="Monitoramento"> Monitoramento 24/7</label>
+                <label class="checkbox-item"><input type="checkbox" name="servicos" value="Incidentes"> Resposta a Incidentes</label>
+                <label class="checkbox-item"><input type="checkbox" name="servicos" value="Auditoria"> Auditoria e Pentest</label>
+                <label class="checkbox-item"><input type="checkbox" name="servicos" value="Treinamento"> Treinamento de Equipes</label>
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label" for="mensagem">Mensagem <span class="mono" style="color: var(--color-fog); font-weight: 500;">(opcional)</span></label>
+              <textarea class="form-textarea" id="mensagem" name="mensagem" placeholder="Conte um pouco sobre o momento da sua empresa..."></textarea>
+            </div>
+          </div>
+
+          <div class="consent-row">
+            <input type="checkbox" id="consentimento" name="consentimento" required>
+            <label for="consentimento">Concordo em ser contatado(a) pela equipe SecTest sobre este cadastro. <span class="required">*</span></label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Enviar cadastro</button>
+        </form>
+
+        <div id="cadastroSuccess" class="form-success hidden">
+          <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div>
+          <h3>Cadastro recebido!</h3>
+          <p>Nossa equipe entrará em contato em até 2 dias úteis para apresentar o diagnóstico gratuito.</p>
+          <a href="index.html" class="btn btn-outline">Voltar à página inicial</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.5l8 3.2v6.1c0 5.4-3.4 9.6-8 10.7-4.6-1.1-8-5.3-8-10.7V5.7l8-3.2z" fill="url(#gf)"/>
+          <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#05070d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <defs><linearGradient id="gf" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#22d3ee"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+        </svg>
+        <span>SecTest</span>
+      </a>
+      <p>Segurança digital empresarial de ponta a ponta, unindo tecnologia, processos e pessoas.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Navegação</h4>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="contato.html">Contato</a></li>
+      </ul>
+    </div>
+    <div class="footer-links">
+      <h4>Serviços</h4>
+      <ul>
+        <li><a href="servicos.html#consultoria">Consultoria</a></li>
+        <li><a href="servicos.html#lgpd">Proteção de Dados</a></li>
+        <li><a href="servicos.html#monitoramento">Monitoramento</a></li>
+        <li><a href="servicos.html#incidentes">Resposta a Incidentes</a></li>
+      </ul>
+    </div>
+    <div class="footer-contact">
+      <h4>Contato</h4>
+      <p>contato@SecTest.com.br</p>
+      <p>(11) 4000-1234</p>
+      <p>Ceará — SP, Brasil</p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; <span id="year"></span> SecTest. Projeto fictício desenvolvido para fins acadêmicos.</p>
+    <a href="admin.html" class="footer-admin-link">Acesso administrativo</a>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

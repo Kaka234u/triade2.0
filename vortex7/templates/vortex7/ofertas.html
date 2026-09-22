@@ -1,0 +1,26 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Ofertas | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header page-header-offer">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <span>Ofertas</span></p>
+    <h1>Ofertas Imperdíveis</h1>
+    <p>Descontos por tempo limitado nos produtos mais desejados da VORTEX 7.</p>
+  </div>
+</section>
+
+<section class="catalog-section">
+  <div class="container">
+    {% if products %}
+    <div class="products-grid">
+      {% for p in products %}
+        {% include "vortex7/_product_card.html" %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>Nenhuma oferta ativa no momento.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

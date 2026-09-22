@@ -1,0 +1,30 @@
+{% macro icon(name) -%}
+<svg viewBox="0 0 24 24" aria-hidden="true">
+{% if name == 'arrow' %}<path d="M5 12h14"/><path d="m14 7 5 5-5 5"/>
+{% elif name == 'car' %}<path d="M5 17h14l-1-6-2-3H8l-2 3-1 6Z"/><path d="M7 17v2M17 17v2M7 13h10"/>
+{% elif name == 'calendar' %}<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>
+{% elif name == 'check' %}<path d="m5 12 4 4L19 6"/>
+{% elif name == 'close' %}<path d="m6 6 12 12"/><path d="m18 6-12 12"/>
+{% elif name == 'droplet' %}<path d="M12 3S6 9.2 6 14a6 6 0 0 0 12 0c0-4.8-6-11-6-11Z"/>
+{% elif name == 'instagram' %}<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>
+{% elif name == 'map' %}<path d="M12 21s7-5.1 7-12a7 7 0 1 0-14 0c0 6.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2"/>
+{% elif name == 'menu' %}<path d="M4 7h16M4 12h16M4 17h16"/>
+{% elif name == 'message' %}<path d="M20 15a4 4 0 0 1-4 4H8l-4 2V7a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8Z"/>
+{% elif name == 'phone' %}<path d="M6.6 3h3l1.5 4-2 1.7a15 15 0 0 0 6.2 6.2l1.7-2 4 1.5v3A3.6 3.6 0 0 1 17.4 21 14.4 14.4 0 0 1 3 6.6 3.6 3.6 0 0 1 6.6 3Z"/>
+{% elif name == 'shield' %}<path d="M12 3 5 6v5c0 4.8 2.8 8.2 7 10 4.2-1.8 7-5.2 7-10V6l-7-3Z"/>
+{% else %}<path d="m12 3 1.3 4.2L17 9l-3.7 1.8L12 15l-1.3-4.2L7 9l3.7-1.8L12 3Z"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/>{% endif %}
+</svg>{%- endmacro %}
+
+{% macro section_label(text) -%}<p class="section-label"><span></span>{{ text }}</p>{%- endmacro %}
+
+{% macro page_hero(eyebrow,title,accent='',copy='',compact=false) -%}
+<section class="page-hero piano{% if compact %} page-hero-compact{% endif %}"><div class="page-hero-copy">{{ section_label(eyebrow) }}<h1>{{ title }}{% if accent %}<br><em>{{ accent }}</em>{% endif %}</h1><p>{{ copy }}</p></div></section>
+{%- endmacro %}
+
+{% macro service_grid(items) -%}
+<div class="service-grid">{% for service in items %}<article class="service-card carbon"><span class="service-number">{{service.number}}</span>{{ icon('droplet' if 'lavagem' in service.slug else ('shield' if 'protecao' in service.slug or 'vitrificacao' in service.slug else 'spark')) }}<p class="card-eyebrow">{{service.eyebrow}}</p><h2>{{service.name}}</h2><p>{{service.summary}}</p><a class="arrow-link" href="{{url_for('kaka.service_detail',slug=service.slug)}}">Ver serviço {{ icon('arrow') }}</a></article>{% endfor %}</div>
+{%- endmacro %}
+
+{% macro final_cta(title='Seu veículo em outro nível.',copy='Conte o que precisa de atenção. A avaliação vem antes de qualquer indicação.') -%}
+<section class="final-cta carbon"><div>{{section_label('Próximo passo')}}<h2>{{title}}</h2><p>{{copy}}</p></div><div class="cta-stack"><a href="{{url_for('kaka.quote')}}" class="arrow-link button button-red">Solicitar orçamento {{icon('arrow')}}</a><a href="{{url_for('kaka.booking')}}" class="arrow-link button button-outline">Pedir um horário {{icon('arrow')}}</a></div></section>
+{%- endmacro %}

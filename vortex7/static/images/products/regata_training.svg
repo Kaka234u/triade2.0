@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+<defs>
+<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#111111"/>
+<stop offset="55%" stop-color="#0a0a0a"/>
+<stop offset="100%" stop-color="#050505"/>
+</linearGradient>
+<linearGradient id="grn" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#39ff6a"/>
+<stop offset="100%" stop-color="#0fa845"/>
+</linearGradient>
+<radialGradient id="glow" cx="50%" cy="45%" r="60%">
+<stop offset="0%" stop-color="#22c55e" stop-opacity="0.35"/>
+<stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+</radialGradient>
+</defs>
+<rect width="600" height="600" fill="url(#bg)"/>
+<circle cx="300" cy="270" r="230" fill="url(#glow)"/>
+<g stroke="#1a2e1f" stroke-width="1">
+<line x1="0" y1="500" x2="600" y2="500"/>
+<line x1="0" y1="460" x2="600" y2="460"/>
+</g>
+
+<g transform="translate(190,110)">
+<path d="M40 0 L80 0 L95 35 L125 35 L140 0 L180 0 L200 50 L165 60 L165 270 L55 270 L55 60 L20 50 Z" fill="#111" stroke="url(#grn)" stroke-width="4"/>
+<path d="M55 100 L165 100" stroke="url(#grn)" stroke-width="3" opacity="0.6"/>
+<path d="M55 150 L165 150" stroke="url(#grn)" stroke-width="3" opacity="0.4"/>
+</g>
+<text x="300" y="565" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="6" fill="#39ff6a" text-anchor="middle">VORTEX 7</text>
+</svg>

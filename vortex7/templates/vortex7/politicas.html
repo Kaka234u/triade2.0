@@ -1,0 +1,66 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Políticas de Uso | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <span>Políticas de Uso</span></p>
+    <h1>Políticas de Uso</h1>
+    <p>Transparência é parte da nossa performance. Veja como funcionamos.</p>
+  </div>
+</section>
+
+<section class="policy-section">
+  <div class="container policy-layout">
+    <nav class="policy-nav">
+      <a href="#compra">Política de Compra</a>
+      <a href="#pagamento">Formas de Pagamento</a>
+      <a href="#envio">Envio e Prazos</a>
+      <a href="#trocas">Trocas e Devoluções</a>
+      <a href="#privacidade">Privacidade</a>
+      <a href="#termos">Termos Gerais</a>
+    </nav>
+
+    <div class="policy-content">
+      <article id="compra">
+        <h2>Política de Compra</h2>
+        <p>Ao finalizar um pedido na VORTEX 7, você concorda com a disponibilidade de estoque no momento da confirmação. Preços e promoções podem ser alterados sem aviso prévio, respeitando os pedidos já confirmados.</p>
+      </article>
+
+      <article id="pagamento">
+        <h2>Formas de Pagamento</h2>
+        <ul class="policy-list">
+          <li><strong>Pix</strong> — aprovação imediata e 5% de desconto em qualquer compra.</li>
+          <li><strong>Cartão de Crédito</strong> — parcelamento em até 3x sem juros.</li>
+          <li><strong>Boleto Bancário</strong> — compensação em até 2 dias úteis.</li>
+        </ul>
+        <p class="policy-note">Nesta versão de demonstração, nenhuma cobrança real é processada.</p>
+      </article>
+
+      <article id="envio">
+        <h2>Envio e Prazos</h2>
+        <p>Trabalhamos com PAC e SEDEX para todo o território nacional. O valor e o prazo são calculados a partir do seu CEP diretamente no carrinho. Compras acima de R$ 299,90 têm frete PAC grátis.</p>
+        <ul class="policy-list">
+          <li><strong>PAC</strong> — de 5 a 8 dias úteis, custo-benefício.</li>
+          <li><strong>SEDEX</strong> — de 2 a 3 dias úteis, entrega expressa.</li>
+        </ul>
+      </article>
+
+      <article id="trocas">
+        <h2>Trocas e Devoluções</h2>
+        <p>Você tem até 30 dias corridos após o recebimento para solicitar troca ou devolução, desde que o produto esteja sem uso, com etiquetas originais e embalagem intacta. Entre em contato pela nossa central de atendimento para iniciar o processo.</p>
+      </article>
+
+      <article id="privacidade">
+        <h2>Privacidade</h2>
+        <p>Seus dados pessoais (nome, e-mail, telefone e endereço) são usados exclusivamente para processar pedidos, contato e melhorar sua experiência de compra. Não compartilhamos suas informações com terceiros para fins de marketing sem sua autorização.</p>
+      </article>
+
+      <article id="termos">
+        <h2>Termos Gerais</h2>
+        <p>O uso deste site implica na aceitação destas políticas. A VORTEX 7 reserva-se o direito de atualizar estes termos a qualquer momento, sendo a versão mais recente sempre a vigente.</p>
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}

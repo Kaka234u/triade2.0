@@ -1,0 +1,82 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Atendimento | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <span>Atendimento</span></p>
+    <h1>Central de Atendimento</h1>
+    <p>Estamos aqui para te ajudar a treinar sem limites.</p>
+  </div>
+</section>
+
+<section class="support-section">
+  <div class="container support-layout">
+    <div class="support-main">
+      <h2>Perguntas Frequentes</h2>
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary>Como calculo o frete da minha compra?</summary>
+          <p>No carrinho, digite seu CEP no campo "Calcular Frete" e clique em calcular. Você verá as opções PAC e SEDEX com prazo e valor estimados.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Quais formas de pagamento vocês aceitam?</summary>
+          <p>Pix (com 5% de desconto), cartão de crédito em até 3x sem juros e boleto bancário.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Posso trocar um produto que não serviu?</summary>
+          <p>Sim! Você tem até 30 dias corridos após o recebimento. Veja todos os detalhes na nossa <a href="{{ url_for('vortex7.politicas') }}">Política de Trocas</a>.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Quanto tempo leva para minha compra chegar?</summary>
+          <p>PAC leva de 5 a 8 dias úteis e SEDEX de 2 a 3 dias úteis, variando conforme sua região.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Como acompanho meu pedido?</summary>
+          <p>Nesta versão de demonstração o rastreio de pedidos ainda não está disponível — chega em breve!</p>
+        </details>
+      </div>
+    </div>
+
+    <aside class="support-contact">
+      <h2>Fale Conosco</h2>
+      <form method="post" class="support-form">
+        <div class="form-group">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" name="nome" required>
+        </div>
+        <div class="form-group">
+          <label for="assunto">Assunto</label>
+          <select id="assunto" name="assunto">
+            <option>Dúvida sobre pedido</option>
+            <option>Troca ou devolução</option>
+            <option>Dúvida sobre produto</option>
+            <option>Outro assunto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" name="mensagem" rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">ENVIAR MENSAGEM</button>
+      </form>
+
+      <div class="support-channels">
+        <h3>Outros canais</h3>
+        <div class="support-channel">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v13H7l-3 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>contato@vortex7.com.br</span>
+        </div>
+        <div class="support-channel">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 5c0 9 7 16 16 16l3-4-6-3-2 2c-3-1-5-3-6-6l2-2-3-6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>(85) 3000-0007</span>
+        </div>
+        <div class="support-channel">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 5-3.2 8.4-7 9-3.8-.6-7-4-7-9V6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>Seg. a sex., 9h às 18h</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

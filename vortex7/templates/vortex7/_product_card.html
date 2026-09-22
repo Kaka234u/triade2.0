@@ -1,0 +1,46 @@
+<article class="product-card">
+  {% if p['promo_price'] %}
+  <span class="badge badge-discount">-{{ p['price']|discount(p['promo_price']) }}%</span>
+  {% elif p['featured'] %}
+  <span class="badge badge-best">MAIS VENDIDO</span>
+  {% endif %}
+  {% if p['stock'] <= 5 and p['stock'] > 0 %}
+  <span class="badge badge-stock">ÚLTIMAS UNIDADES</span>
+  {% elif p['stock'] == 0 %}
+  <span class="badge badge-outstock">ESGOTADO</span>
+  {% endif %}
+
+  <a href="{{ url_for('vortex7.produto', product_id=p['id']) }}" class="product-image-link">
+    <img src="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}" alt="{{ p['name'] }}" loading="lazy" class="product-image">
+  </a>
+
+  <div class="product-info">
+    <span class="product-category">{{ p['category_name'] if p['category_name'] is defined else '' }}</span>
+    <h3 class="product-name"><a href="{{ url_for('vortex7.produto', product_id=p['id']) }}">{{ p['name'] }}</a></h3>
+
+    <div class="product-rating">
+      <span class="stars" style="--rating: {{ p['rating'] }}"><span class="stars-fill"></span></span>
+      <span class="rating-value">{{ p['rating'] }}</span>
+      <span class="rating-count">({{ p['reviews_count'] }})</span>
+    </div>
+
+    <div class="product-price-row">
+      {% if p['promo_price'] %}
+      <span class="price-old">R$ {{ p['price']|brl }}</span>
+      <span class="price-current">R$ {{ p['promo_price']|brl }}</span>
+      {% else %}
+      <span class="price-current">R$ {{ p['price']|brl }}</span>
+      {% endif %}
+    </div>
+
+    <form action="{{ url_for('vortex7.adicionar_carrinho', product_id=p['id']) }}" method="post" class="product-add-form">
+      <input type="hidden" name="quantidade" value="1">
+      <button type="submit" class="btn btn-primary btn-add-cart" {% if p['stock'] == 0 %}disabled{% endif %}>
+        {% if p['stock'] == 0 %}INDISPONÍVEL{% else %}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.4a2 2 0 002 1.6h8.4a2 2 0 002-1.6L21 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="21" r="1.4" fill="currentColor"/><circle cx="18" cy="21" r="1.4" fill="currentColor"/></svg>
+        ADICIONAR
+        {% endif %}
+      </button>
+    </form>
+  </div>
+</article>

@@ -1,0 +1,72 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Minha Conta | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <span>Minha Conta</span></p>
+    <h1>Minha Conta</h1>
+  </div>
+</section>
+
+<section class="account-section">
+  <div class="container account-layout">
+    <div class="account-avatar-card">
+      <div class="account-avatar">{{ user['name'][0]|upper }}</div>
+      <h2>{{ user['name'] }}</h2>
+      <p>{{ user['email'] }}</p>
+      <a href="{{ url_for('vortex7.logout') }}" class="btn btn-outline btn-block">SAIR DA CONTA</a>
+    </div>
+
+    <div class="account-details-card">
+      <h3>Dados da Conta</h3>
+      <div class="account-detail-row">
+        <span>Nome</span>
+        <strong>{{ user['name'] }}</strong>
+      </div>
+      <div class="account-detail-row">
+        <span>E-mail</span>
+        <strong>{{ user['email'] }}</strong>
+      </div>
+      <div class="account-detail-row">
+        <span>Cliente desde</span>
+        <strong>{{ user['created_at'][:10] }}</strong>
+      </div>
+
+      <h3 class="account-section-title">Dados de Contato e Entrega</h3>
+      <form method="post" action="{{ url_for('vortex7.editar_conta') }}" class="account-edit-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Telefone / WhatsApp</label>
+            <input type="tel" id="phone" name="phone" value="{{ user['phone'] or '' }}" placeholder="(00) 00000-0000">
+          </div>
+          <div class="form-group">
+            <label for="cep">CEP</label>
+            <input type="text" id="cep" name="cep" value="{{ user['cep'] or '' }}" placeholder="00000-000" maxlength="9">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="address">Endereço</label>
+          <input type="text" id="address" name="address" value="{{ user['address'] or '' }}" placeholder="Rua, número, complemento">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">Cidade</label>
+            <input type="text" id="city" name="city" value="{{ user['city'] or '' }}">
+          </div>
+          <div class="form-group form-group-sm">
+            <label for="state">UF</label>
+            <input type="text" id="state" name="state" value="{{ user['state'] or '' }}" maxlength="2" style="text-transform:uppercase;">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">SALVAR DADOS</button>
+      </form>
+
+      <div class="account-orders-empty">
+        <p>Você ainda não tem pedidos anteriores por aqui.</p>
+        <a href="{{ url_for('vortex7.produtos') }}" class="btn btn-outline">COMEÇAR A COMPRAR</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

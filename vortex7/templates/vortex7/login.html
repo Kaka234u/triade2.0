@@ -1,0 +1,26 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Entrar | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="auth-card">
+    <img src="{{ url_for('vortex7.static', filename='images/logo/logo.jpg') }}" alt="VORTEX 7" class="auth-logo">
+    <h1>Entrar na sua conta</h1>
+    <p class="auth-subtitle">Acesse para acompanhar seus pedidos e favoritos.</p>
+
+    <form method="post" class="auth-form">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" value="{{ email or '' }}" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg btn-block">ENTRAR</button>
+    </form>
+
+    <p class="auth-switch">Não tem uma conta? <a href="{{ url_for('vortex7.cadastro') }}">Cadastre-se</a></p>
+  </div>
+</section>
+{% endblock %}
