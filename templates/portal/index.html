@@ -506,6 +506,15 @@
   }
   .company-panel:hover .panel-visual::after{opacity:1;}
 
+  .panel-visual{background:#000;}
+  .panel-sectest .panel-visual{background:#282751;}
+  .panel-visual::after{display:none;}
+  .panel-visual > img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:contain;
+  }
+
   /* Vortex pattern — diagonal speed lines */
   .pattern-vortex{
     position:absolute; inset:0;
@@ -817,20 +826,13 @@
           </a>
         </div>
         <div class="panel-visual">
-          <div class="pattern-vortex" aria-hidden="true">
-            <div class="court-line" style="left:14%; top:0; bottom:0; border-width:0 1px 0 0;"></div>
-            <div class="court-line" style="left:14%; right:14%; top:50%; height:0; border-width:1px 0 0 0;"></div>
-            <div class="court-line" style="left:44%; right:44%; top:38%; bottom:38%; border-radius:50%;"></div>
-          </div>
+          <img src="{{ url_for('static', filename='images/banners/vortex7.png') }}" alt="Vortex 7" loading="lazy" decoding="async">
         </div>
       </article>
 
       <article class="company-panel panel-kaka" id="kaka">
         <div class="panel-visual">
-          <div class="pattern-kaka" aria-hidden="true">
-            <div class="sheen"></div>
-            <div class="edge"></div>
-          </div>
+          <img src="{{ url_for('kaka.static', filename='images/fk-kaka-logo.png') }}" alt="FK Kaka Detail — Estética Automotiva" loading="lazy" decoding="async">
         </div>
         <div class="panel-info">
           <p class="panel-cat"><span class="brand-badge"><img src="{{ url_for('kaka.static', filename='favicon.svg') }}" alt=""></span>Estética automotiva</p>
@@ -849,19 +851,7 @@
 
       <article class="company-panel panel-sectest" id="sectest">
         <div class="panel-visual">
-          <div class="pattern-sectest" aria-hidden="true">
-            <svg viewBox="0 0 500 420" preserveAspectRatio="none">
-              <line class="link" x1="40" y1="60" x2="220" y2="140"/>
-              <line class="link" x1="220" y1="140" x2="420" y2="90"/>
-              <line class="link" x1="220" y1="140" x2="180" y2="320"/>
-              <line class="link" x1="180" y1="320" x2="400" y2="360"/>
-              <circle class="node" cx="40" cy="60" r="3.5"/>
-              <circle class="node" cx="220" cy="140" r="3.5"/>
-              <circle class="node" cx="420" cy="90" r="3.5"/>
-              <circle class="node" cx="180" cy="320" r="3.5"/>
-              <circle class="node" cx="400" cy="360" r="3.5"/>
-            </svg>
-          </div>
+          <img src="{{ url_for('static', filename='images/banners/sectest.jpg') }}" alt="SecTest" loading="lazy" decoding="async">
         </div>
         <div class="panel-info">
           <p class="panel-cat"><span class="brand-badge"><img src="{{ url_for('sectest.static', filename='assets/favicon.svg') }}" alt=""></span>Cybersecurity</p>
