@@ -17,7 +17,7 @@
         {% for item in items %}
         <div class="cart-item">
           <a href="{{ url_for('vortex7.produto', product_id=item.product['id']) }}" class="cart-item-img">
-            <img src="{{ url_for('vortex7.static', filename='images/products/' ~ item.product['image']) }}" alt="{{ item.product['name'] }}">
+            <img src="{{ product_img(item.product) }}" alt="{{ item.product['name'] }}">
           </a>
           <div class="cart-item-info">
             <a href="{{ url_for('vortex7.produto', product_id=item.product['id']) }}" class="cart-item-name">{{ item.product['name'] }}</a>

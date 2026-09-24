@@ -115,8 +115,9 @@ def init_db():
         produtos = [
             (
                 "Chuteira Vortex Strike Pro",
-                "Chuteira de alta performance para campo, com solado adaptativo e cravos de tração "
-                "extrema. Desenvolvida para quem busca velocidade e precisão em cada jogada.",
+                "Chuteira de futsal de alta performance, com solado de borracha para quadra e cabedal "
+                "texturizado que garante toque preciso na bola. Feita para quem busca velocidade, "
+                "controle e firmeza em cada jogada.",
                 399.90, 319.90, cat["futebol"], "chuteira_strike.svg", 24, 4.8, 132,
                 "38,39,40,41,42,43,44", "Preto/Verde,Preto/Branco", 1,
             ),
@@ -150,9 +151,9 @@ def init_db():
             ),
             (
                 "Luvas Vortex Grip Power",
-                "Luvas de treino com palma reforçada e ajuste ergonômico em velcro. Proteção "
-                "e aderência para levantamentos pesados.",
-                89.90, None, cat["academia"], "luvas_grip_power.svg", 40, 4.3, 39,
+                "Luvas de goleiro de futsal com palma de látex texturizado para máxima aderência, "
+                "dedos reforçados e munhequeira ajustável em velcro. Firmeza e proteção em cada defesa.",
+                89.90, None, cat["futebol"], "luvas_grip_power.svg", 40, 4.3, 39,
                 "P,M,G", "Preto/Verde", 0,
             ),
             (
@@ -164,10 +165,10 @@ def init_db():
             ),
             (
                 "Garrafa Térmica Vortex Hydro",
-                "Garrafa térmica de aço inoxidável, mantém a temperatura por até 12 horas. "
-                "Design ergonômico com pegada antiderrapante.",
+                "Garrafa térmica de aço inoxidável de 750 ml, mantém a temperatura por até 12 horas. "
+                "Tampa com trava e alça de transporte, design ergonômico com acabamento antiderrapante.",
                 69.90, 54.90, cat["acessorios"], "garrafa_hydro.svg", 60, 4.6, 98,
-                "600ml", "Preto,Verde", 0,
+                "750ml", "Preto,Verde", 0,
             ),
         ]
         cur.executemany(
@@ -178,6 +179,25 @@ def init_db():
             produtos,
         )
         conn.commit()
+
+    # Migração idempotente: garante que a bola de futsal exista em bancos já criados
+    if not cur.execute("SELECT 1 FROM products WHERE name = ?", ("Bola Vortex 7 Futsal Pro",)).fetchone():
+        cat_id = cur.execute("SELECT id FROM categories WHERE slug = 'futebol'").fetchone()
+        if cat_id:
+            cur.execute(
+                """INSERT INTO products
+                   (name, description, price, promo_price, category_id, image, stock,
+                    rating, reviews_count, sizes, colors, featured)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    "Bola Vortex 7 Futsal Pro",
+                    "Bola de futsal tamanho 4 com cobertura texturizada de alta aderência e "
+                    "construção resistente. Trajetória precisa e ótimo controle, do treino ao jogo.",
+                    189.90, None, cat_id[0], "bola_futsal_pro.webp", 30, 4.5, 0,
+                    "Tamanho 4", "Preto/Verde", 0,
+                ),
+            )
+            conn.commit()
 
     conn.close()
     return is_new
@@ -215,6 +235,58 @@ def inject_globals():
         "cart_count": cart_count(),
         "current_user": session.get("user_name"),
     }
+
+
+# ---------------------------------------------------------------------------
+# Fotos dos produtos
+# ---------------------------------------------------------------------------
+# Regra: o campo `image` do banco (ex.: "chuteira_strike.svg") define o NOME-BASE
+# da foto. Se existir um arquivo com esse mesmo nome-base em
+# static/images/products/ com extensão de foto (webp/jpg/jpeg/png/avif), ele é
+# usado no lugar do SVG. Fotos extras da galeria: <nome-base>_2, _3, ... _6.
+# Sem foto na pasta, o SVG placeholder continua aparecendo (nada quebra).
+
+PRODUCT_IMG_DIR = os.path.join(BASE_DIR, "static", "images", "products")
+PHOTO_EXTS = ("webp", "jpg", "jpeg", "png", "avif")
+MAX_GALLERY = 6
+
+
+def _find_photo(base):
+    for ext in PHOTO_EXTS:
+        fname = f"{base}.{ext}"
+        if os.path.exists(os.path.join(PRODUCT_IMG_DIR, fname)):
+            return fname
+    return None
+
+
+def _static_url(fname):
+    path = os.path.join(PRODUCT_IMG_DIR, fname)
+    try:
+        version = int(os.path.getmtime(path))  # evita cache ao trocar a foto
+    except OSError:
+        version = 0
+    return url_for("vortex7.static", filename="images/products/" + fname, v=version)
+
+
+@app.app_template_global("product_img")
+def product_img(product):
+    """URL da imagem principal (foto real se existir, senão o SVG do banco)."""
+    image = product["image"] or ""
+    base = os.path.splitext(image)[0]
+    return _static_url(_find_photo(base) or image)
+
+
+@app.app_template_global("product_gallery")
+def product_gallery(product):
+    """Lista de URLs para a galeria: principal + fotos _2.._6 que existirem."""
+    image = product["image"] or ""
+    base = os.path.splitext(image)[0]
+    urls = [product_img(product)]
+    for n in range(2, MAX_GALLERY + 1):
+        extra = _find_photo(f"{base}_{n}")
+        if extra:
+            urls.append(_static_url(extra))
+    return urls
 
 
 @app.app_template_filter("discount")

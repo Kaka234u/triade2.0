@@ -12,20 +12,19 @@
 
     <div class="product-detail-grid">
       <div class="product-gallery">
+        {% set gallery = product_gallery(p) %}
         <div class="gallery-main">
-          <img src="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}" alt="{{ p['name'] }}" id="galleryMain">
+          <img src="{{ gallery[0] }}" alt="{{ p['name'] }}" id="galleryMain">
         </div>
+        {% if gallery|length > 1 %}
         <div class="gallery-thumbs">
-          <button class="gallery-thumb active" data-img="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}">
-            <img src="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}" alt="Miniatura 1">
+          {% for img in gallery %}
+          <button type="button" class="gallery-thumb{% if loop.first %} active{% endif %}" data-img="{{ img }}">
+            <img src="{{ img }}" alt="{{ p['name'] }} - foto {{ loop.index }}" loading="lazy">
           </button>
-          <button class="gallery-thumb" data-img="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}">
-            <img src="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}" alt="Miniatura 2" style="filter: hue-rotate(15deg) brightness(0.9);">
-          </button>
-          <button class="gallery-thumb" data-img="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}">
-            <img src="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}" alt="Miniatura 3" style="filter: grayscale(0.5) brightness(1.1);">
-          </button>
+          {% endfor %}
         </div>
+        {% endif %}
       </div>
 
       <div class="product-detail-info">

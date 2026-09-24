@@ -68,7 +68,7 @@
       <h3>Resumo</h3>
       {% for item in items %}
       <div class="checkout-item-row">
-        <img src="{{ url_for('vortex7.static', filename='images/products/' ~ item.product['image']) }}" alt="{{ item.product['name'] }}">
+        <img src="{{ product_img(item.product) }}" alt="{{ item.product['name'] }}">
         <div>
           <span>{{ item.product['name'] }}</span>
           <span class="checkout-item-qty">Qtd: {{ item.qty }}</span>

@@ -11,7 +11,7 @@
   {% endif %}
 
   <a href="{{ url_for('vortex7.produto', product_id=p['id']) }}" class="product-image-link">
-    <img src="{{ url_for('vortex7.static', filename='images/products/' ~ p['image']) }}" alt="{{ p['name'] }}" loading="lazy" class="product-image">
+    <img src="{{ product_img(p) }}" alt="{{ p['name'] }}" loading="lazy" class="product-image">
   </a>
 
   <div class="product-info">
