@@ -1,0 +1,23 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Categorias{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Categorias</h1></div></div>
+<div class="adm-grid g2">
+  <div class="adm-card">
+    <table class="adm-table"><thead><tr><th>Nome</th><th>Slug</th><th class="num">Produtos</th><th></th></tr></thead><tbody>
+    {% for c in categories %}
+    <tr><td>{{ c['name'] }}</td><td style="color:var(--text-3)">{{ c['slug'] }}</td><td class="num">{{ c['n'] }}</td>
+      <td class="num">{% if c['n'] == 0 %}
+        <form method="post" action="{{ url_for('vortex7.admin.category_delete', cid=c['id']) }}" onsubmit="return confirm('Excluir a categoria {{ c['name'] }}?')">{{ csrf_input() }}<button class="btn btn-danger btn-sm" type="submit">Excluir</button></form>
+      {% endif %}</td></tr>
+    {% endfor %}</tbody></table>
+  </div>
+  <div class="adm-card">
+    <h2>Nova categoria</h2>
+    <form method="post" class="adm-form">{{ csrf_input() }}
+      <label>Nome <input type="text" name="name" required maxlength="60"></label>
+      <button class="btn btn-primary btn-sm" type="submit">ADICIONAR</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

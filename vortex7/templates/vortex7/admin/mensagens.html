@@ -1,0 +1,19 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Mensagens{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Mensagens</h1><p class="adm-sub">Enviadas pela Central de Atendimento</p></div></div>
+{% if messages %}
+<div class="adm-grid">
+  {% for m in messages %}
+  <div class="adm-msg {% if not m['is_read'] %}unread{% endif %}">
+    <header><span><strong style="color:var(--text-0)">{{ m['name'] }}</strong> · {{ m['contact'] }}</span><span>{{ m['subject'] }} · {{ m['created_at']|dt }}</span></header>
+    <p>{{ m['message'] }}</p>
+    <div class="adm-actions">
+      <form method="post" action="{{ url_for('vortex7.admin.message_read', mid=m['id']) }}">{{ csrf_input() }}<button class="btn btn-outline btn-sm" type="submit">{{ 'Marcar como não lida' if m['is_read'] else 'Marcar como lida' }}</button></form>
+      <form method="post" action="{{ url_for('vortex7.admin.message_delete', mid=m['id']) }}" onsubmit="return confirm('Excluir esta mensagem?')">{{ csrf_input() }}<button class="btn btn-danger btn-sm" type="submit">Excluir</button></form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}<div class="adm-card"><p class="adm-empty">Nenhuma mensagem por enquanto.</p></div>{% endif %}
+{% endblock %}

@@ -9,6 +9,7 @@
     <p class="auth-subtitle">Junte-se à VORTEX 7 e leve sua performance mais longe.</p>
 
     <form method="post" class="auth-form">
+{{ csrf_input() }}
       <div class="form-group">
         <label for="name">Nome completo</label>
         <input type="text" id="name" name="name" value="{{ name or '' }}" required autofocus>

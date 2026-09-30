@@ -35,6 +35,7 @@
 
       <h3 class="account-section-title">Dados de Contato e Entrega</h3>
       <form method="post" action="{{ url_for('vortex7.editar_conta') }}" class="account-edit-form">
+{{ csrf_input() }}
         <div class="form-row">
           <div class="form-group">
             <label for="phone">Telefone / WhatsApp</label>
@@ -62,10 +63,23 @@
         <button type="submit" class="btn btn-primary">SALVAR DADOS</button>
       </form>
 
+      <h3 class="account-section-title">Meus Pedidos</h3>
+      {% if orders %}
+      <div class="account-orders">
+        {% for o in orders %}
+        <a class="account-order" href="{{ order_url(o) }}">
+          <div><strong>{{ o['number'] }}</strong><span>{{ o['created_at']|dt }}</span></div>
+          <div><span class="order-pill">{{ STATUS_LABELS()[o['status']] }}</span></div>
+          <strong class="account-order-total">R$ {{ o['total']|brl }}</strong>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
       <div class="account-orders-empty">
         <p>Você ainda não tem pedidos anteriores por aqui.</p>
         <a href="{{ url_for('vortex7.produtos') }}" class="btn btn-outline">COMEÇAR A COMPRAR</a>
       </div>
+      {% endif %}
     </div>
   </div>
 </section>

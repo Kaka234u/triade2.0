@@ -34,6 +34,7 @@
     </div>
 
     <form action="{{ url_for('vortex7.adicionar_carrinho', product_id=p['id']) }}" method="post" class="product-add-form">
+{{ csrf_input() }}
       <input type="hidden" name="quantidade" value="1">
       <button type="submit" class="btn btn-primary btn-add-cart" {% if p['stock'] == 0 %}disabled{% endif %}>
         {% if p['stock'] == 0 %}INDISPONÍVEL{% else %}

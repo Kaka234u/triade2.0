@@ -6,89 +6,144 @@
   <div class="container">
     <p class="breadcrumb"><a href="{{ url_for('vortex7.index') }}">Início</a> / <a href="{{ url_for('vortex7.carrinho') }}">Carrinho</a> / <span>Checkout</span></p>
     <h1>Finalizar Compra</h1>
-    <p>Versão demonstrativa — nenhum pagamento real é processado.</p>
+    {% if test_mode %}<p>Modo teste — os pagamentos são simulados e nenhuma cobrança real é feita.</p>{% else %}<p>Confira seus dados, escolha o envio e a forma de pagamento.</p>{% endif %}
   </div>
 </section>
 
 <section class="checkout-section">
   <div class="container checkout-layout">
-    <form method="post" action="{{ url_for('vortex7.checkout_confirmar') }}" class="checkout-form">
+    <form method="post" action="{{ url_for('vortex7.checkout_confirmar') }}" class="checkout-form" id="checkoutForm">
+      {{ csrf_input() }}
 
       <div class="checkout-block">
-        <h3><span class="checkout-step">1</span> Forma de Envio</h3>
+        <h3><span class="checkout-step">1</span> Seus dados</h3>
+        <div class="checkout-fields">
+          <div class="form-group span-2"><label for="name">Nome completo *</label>
+            <input type="text" id="name" name="name" value="{{ form.name }}" autocomplete="name" required></div>
+          <div class="form-group"><label for="email">E-mail *</label>
+            <input type="email" id="email" name="email" value="{{ form.email }}" autocomplete="email" required></div>
+          <div class="form-group"><label for="phone">Telefone / WhatsApp *</label>
+            <input type="tel" id="phone" name="phone" value="{{ form.phone }}" placeholder="(85) 99999-9999" autocomplete="tel" required></div>
+          <div class="form-group"><label for="cpf">CPF <small>(opcional)</small></label>
+            <input type="text" id="cpf" name="cpf" value="{{ form.cpf }}" placeholder="000.000.000-00" inputmode="numeric" maxlength="14"></div>
+        </div>
+      </div>
+
+      <div class="checkout-block">
+        <h3><span class="checkout-step">2</span> Endereço de entrega</h3>
+        <div class="checkout-fields">
+          <div class="form-group"><label for="cep">CEP</label>
+            <input type="text" id="cep" value="{{ frete.cep[:5] }}-{{ frete.cep[5:] }}" readonly aria-describedby="cepHelp">
+            <small id="cepHelp" class="field-help"><a href="{{ url_for('vortex7.carrinho') }}">Alterar no carrinho</a></small></div>
+          <div class="form-group span-2"><label for="address">Rua e número *</label>
+            <input type="text" id="address" name="address" value="{{ form.address }}" autocomplete="address-line1" required></div>
+          <div class="form-group"><label for="complement">Complemento</label>
+            <input type="text" id="complement" name="complement" value="{{ form.complement }}" autocomplete="address-line2"></div>
+          <div class="form-group"><label for="neighborhood">Bairro *</label>
+            <input type="text" id="neighborhood" name="neighborhood" value="{{ form.neighborhood }}" required></div>
+          <div class="form-group"><label for="city">Cidade *</label>
+            <input type="text" id="city" name="city" value="{{ form.city }}" autocomplete="address-level2" required></div>
+          <div class="form-group form-group-sm"><label for="state">UF *</label>
+            <input type="text" id="state" name="state" value="{{ form.state }}" maxlength="2" style="text-transform:uppercase" autocomplete="address-level1" required></div>
+          <div class="form-group span-2"><label for="notes">Observações do pedido</label>
+            <input type="text" id="notes" name="notes" value="{{ form.notes }}" maxlength="200" placeholder="Ex.: deixar com o porteiro"></div>
+        </div>
+      </div>
+
+      <div class="checkout-block">
+        <h3><span class="checkout-step">3</span> Forma de envio</h3>
         <label class="checkout-option">
-          <input type="radio" name="envio" value="pac" checked>
-          <div>
-            <strong>PAC</strong>
-            <span>Entrega em {{ frete.pac_days }} dias úteis</span>
-          </div>
+          <input type="radio" name="envio" value="pac" {% if form.envio != 'sedex' %}checked{% endif %}>
+          <div><strong>PAC</strong><span>Entrega em {{ frete.pac_days }} dias úteis</span></div>
           <strong class="checkout-option-price">{% if frete.frete_gratis %}GRÁTIS{% else %}R$ {{ frete.pac_price|brl }}{% endif %}</strong>
         </label>
         <label class="checkout-option">
-          <input type="radio" name="envio" value="sedex">
-          <div>
-            <strong>SEDEX</strong>
-            <span>Entrega em {{ frete.sedex_days }} dias úteis</span>
-          </div>
+          <input type="radio" name="envio" value="sedex" {% if form.envio == 'sedex' %}checked{% endif %}>
+          <div><strong>SEDEX</strong><span>Entrega em {{ frete.sedex_days }} dias úteis</span></div>
           <strong class="checkout-option-price">R$ {{ frete.sedex_price|brl }}</strong>
         </label>
       </div>
 
       <div class="checkout-block">
-        <h3><span class="checkout-step">2</span> Forma de Pagamento</h3>
-        <label class="checkout-option">
-          <input type="radio" name="pagamento" value="pix" checked>
-          <div>
-            <strong>Pix</strong>
-            <span>Aprovação imediata, 5% de desconto</span>
-          </div>
-          <span class="checkout-badge">RECOMENDADO</span>
+        <h3><span class="checkout-step">4</span> Forma de pagamento</h3>
+        {% set pix_desc = 'Pagamento na hora' ~ (', %g%% de desconto'|format(pix_pct) if pix_pct else '') %}
+        {% set pay_info = [
+          ('pix', 'Pix', pix_desc),
+          ('cartao', 'Cartão de Crédito', 'Em até 3x sem juros'),
+          ('boleto', 'Boleto Bancário', 'Compensação em até 2 dias úteis') ] %}
+        {% for key, title, desc in pay_info %}
+        {% set ok = methods[key][0] %}{% set note = methods[key][1] %}
+        <label class="checkout-option {% if not ok %}is-disabled{% endif %}">
+          <input type="radio" name="pagamento" value="{{ key }}" {% if not ok %}disabled{% endif %}
+                 {% if form.pagamento == key and ok %}checked{% endif %}>
+          <div><strong>{{ title }}</strong><span>{% if not ok %}{{ note }}{% else %}{{ desc }}{% if note %} · {{ note }}{% endif %}{% endif %}</span></div>
+          {% if key == 'pix' and ok %}<span class="checkout-badge">RECOMENDADO</span>{% endif %}
         </label>
-        <label class="checkout-option">
-          <input type="radio" name="pagamento" value="cartao">
-          <div>
-            <strong>Cartão de Crédito</strong>
-            <span>Em até 3x sem juros</span>
-          </div>
-        </label>
-        <label class="checkout-option">
-          <input type="radio" name="pagamento" value="boleto">
-          <div>
-            <strong>Boleto Bancário</strong>
-            <span>Compensação em até 2 dias úteis</span>
-          </div>
-        </label>
+        {% endfor %}
       </div>
 
-      <button type="submit" class="btn btn-primary btn-lg btn-block">CONFIRMAR PEDIDO</button>
-      <p class="checkout-disclaimer">Ao confirmar, você simula a finalização de um pedido de demonstração da VORTEX 7. Nenhuma cobrança será feita.</p>
+      <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn">CONFIRMAR PEDIDO</button>
+      <p class="checkout-disclaimer">
+        {% if test_mode %}Modo teste: o pedido é registrado, mas nenhuma cobrança é feita.
+        {% else %}Ao confirmar, seu pedido é registrado e você recebe o comprovante na hora.
+        Pagamentos com cartão e boleto são feitos no ambiente seguro do Mercado Pago.{% endif %}
+      </p>
     </form>
 
-    <aside class="cart-summary checkout-summary">
+    <aside class="cart-summary checkout-summary" id="summary"
+           data-subtotal="{{ subtotal }}" data-pac="{{ frete.pac_price }}" data-sedex="{{ frete.sedex_price }}" data-pix="{{ pix_pct }}">
       <h3>Resumo</h3>
       {% for item in items %}
       <div class="checkout-item-row">
         <img src="{{ product_img(item.product) }}" alt="{{ item.product['name'] }}">
         <div>
           <span>{{ item.product['name'] }}</span>
-          <span class="checkout-item-qty">Qtd: {{ item.qty }}</span>
+          <span class="checkout-item-qty">Qtd: {{ item.qty }}{% if item.size %} · {{ item.size }}{% endif %}{% if item.color %} · {{ item.color }}{% endif %}</span>
         </div>
         <strong>R$ {{ item.line_total|brl }}</strong>
       </div>
       {% endfor %}
-      <div class="summary-row">
-        <span>Subtotal</span>
-        <span>R$ {{ subtotal|brl }}</span>
-      </div>
-      <div class="summary-row">
-        <span>Frete (PAC)</span>
-        <span>{% if frete.frete_gratis %}Grátis{% else %}R$ {{ frete.pac_price|brl }}{% endif %}</span>
-      </div>
-      <div class="summary-row summary-total">
-        <span>Total estimado</span>
-        <span>R$ {{ (subtotal + (0 if frete.frete_gratis else frete.pac_price))|brl }}</span>
-      </div>
+      <div class="summary-row"><span>Subtotal</span><span>R$ {{ subtotal|brl }}</span></div>
+      <div class="summary-row" id="rowDiscount" hidden><span>Desconto Pix</span><span id="valDiscount"></span></div>
+      <div class="summary-row"><span id="lblShip">Frete (PAC)</span><span id="valShip"></span></div>
+      <div class="summary-row summary-total"><span>Total</span><span id="valTotal"></span></div>
     </aside>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var box = document.getElementById("summary");
+  var form = document.getElementById("checkoutForm");
+  if (!box || !form) return;
+  var sub = parseFloat(box.dataset.subtotal), pac = parseFloat(box.dataset.pac),
+      sedex = parseFloat(box.dataset.sedex), pixPct = parseFloat(box.dataset.pix) || 0;
+  var brl = function (v) { return "R$ " + v.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
+  function checked(name) { var el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : null; }
+  function update() {
+    var envio = checked("envio") || "pac", pay = checked("pagamento");
+    var ship = envio === "sedex" ? sedex : pac;
+    var disc = pay === "pix" ? Math.round(sub * pixPct) / 100 : 0;
+    document.getElementById("lblShip").textContent = "Frete (" + (envio === "sedex" ? "SEDEX" : "PAC") + ")";
+    document.getElementById("valShip").textContent = ship === 0 ? "Grátis" : brl(ship);
+    document.getElementById("rowDiscount").hidden = disc === 0;
+    document.getElementById("valDiscount").textContent = "− " + brl(disc);
+    document.getElementById("valTotal").textContent = brl(sub - disc + ship);
+  }
+  form.addEventListener("change", update);
+  update();
+
+  var cpf = document.getElementById("cpf");
+  if (cpf) cpf.addEventListener("input", function () {
+    var d = cpf.value.replace(/\D/g, "").slice(0, 11);
+    cpf.value = d.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  });
+  form.addEventListener("submit", function () {
+    var btn = document.getElementById("submitBtn");
+    setTimeout(function () { btn.disabled = true; btn.textContent = "PROCESSANDO…"; }, 0);
+  });
+})();
+</script>
 {% endblock %}

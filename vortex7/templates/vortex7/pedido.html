@@ -1,0 +1,107 @@
+{% extends "vortex7/base.html" %}
+{% block title %}Pedido {{ order['number'] }} | VORTEX 7{% endblock %}
+
+{% block content %}
+<section class="order-section">
+  <div class="container order-wrap">
+
+    <div class="order-hero {% if order['payment_status'] == 'pago' %}is-paid{% elif order['status'] == 'cancelado' %}is-cancelled{% endif %}">
+      <div class="confirmation-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      {% if order['status'] == 'cancelado' %}
+        <h1>Pedido cancelado</h1>
+      {% elif order['payment_status'] == 'pago' %}
+        <h1>Pagamento confirmado!</h1>
+      {% else %}
+        <h1>Pedido recebido!</h1>
+      {% endif %}
+      <p class="confirmation-order">Número do pedido: <strong>{{ order['number'] }}</strong></p>
+      <p class="order-status-line">Situação: <span class="order-pill">{{ STATUS_LABELS()[order['status']] }}</span>
+        {% if order['tracking_code'] %} · Rastreio: <strong>{{ order['tracking_code'] }}</strong>{% endif %}</p>
+    </div>
+
+    {% if test_mode and pending %}
+    <div class="order-alert">
+      <strong>Modo teste.</strong> Nenhuma cobrança real será feita.
+      <form method="post" action="{{ url_for('vortex7.pedido_simular', number=order['number'], t=order['access_token']) }}">
+        {{ csrf_input() }}<button type="submit" class="btn btn-outline">SIMULAR PAGAMENTO</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if pending %}
+    <div class="order-card">
+      {% if order['payment_method'] == 'pix' %}
+        <h2>Pague com Pix — R$ {{ order['total']|brl }}</h2>
+        <div class="pix-box">
+          <div class="pix-qr">{{ qr|safe }}</div>
+          <div class="pix-info">
+            <ol>
+              <li>Abra o app do seu banco e escolha <strong>Pix</strong>.</li>
+              <li>Escaneie o QR Code ou use o <strong>Pix copia e cola</strong>.</li>
+              <li>Confira o valor e confirme. Pronto!</li>
+            </ol>
+            <label for="pixCode">Pix copia e cola</label>
+            <textarea id="pixCode" readonly rows="4">{{ order['pix_payload'] }}</textarea>
+            <button type="button" class="btn btn-primary" id="copyPix">COPIAR CÓDIGO</button>
+            <p class="order-hint">Assim que o pagamento for identificado pela nossa equipe, o status muda para <em>Pago</em>. Você pode acompanhar nesta página.</p>
+          </div>
+        </div>
+      {% else %}
+        <h2>{{ METHOD_LABELS()[order['payment_method']] }} — R$ {{ order['total']|brl }}</h2>
+        {% if order['mp_init_point'] and not test_mode %}
+          <p>O pagamento é feito no ambiente seguro do Mercado Pago.</p>
+          <a class="btn btn-primary btn-lg" href="{{ order['mp_init_point'] }}">IR PARA O PAGAMENTO</a>
+        {% elif can_retry_mp %}
+          <p>Não conseguimos abrir a página de pagamento. Tente novamente:</p>
+          <form method="post" action="{{ url_for('vortex7.pedido_pagar', number=order['number'], t=order['access_token']) }}">
+            {{ csrf_input() }}<button type="submit" class="btn btn-primary btn-lg">GERAR LINK DE PAGAMENTO</button>
+          </form>
+        {% elif test_mode %}
+          <p>No modo teste não há cobrança. Use o botão “Simular pagamento” acima.</p>
+        {% endif %}
+        <p class="order-hint">{% if order['payment_method'] == 'boleto' %}O boleto vence em poucos dias; o pedido só é enviado após a compensação (até 2 dias úteis).{% else %}Após a aprovação do cartão, esta página e o seu comprovante são atualizados.{% endif %}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="order-card">
+      <div class="order-card-head">
+        <h2>Resumo do pedido</h2>
+        <div class="order-doc-actions">
+          <a class="btn btn-outline" href="{{ url_for('vortex7.comprovante', number=order['number'], t=order['access_token']) }}" target="_blank" rel="noopener">VER COMPROVANTE</a>
+          <a class="btn btn-primary" href="{{ url_for('vortex7.comprovante_pdf', number=order['number'], t=order['access_token'], download=1) }}">BAIXAR PDF</a>
+        </div>
+      </div>
+      {% for it in items %}
+      <div class="order-line"><span>{{ it['qty'] }}× {{ it['name'] }}{% if it['size'] or it['color'] %} <small>({{ [it['size'], it['color']]|select|join(' / ') }})</small>{% endif %}</span><strong>R$ {{ it['line_total']|brl }}</strong></div>
+      {% endfor %}
+      <div class="order-line"><span>Subtotal</span><span>R$ {{ order['subtotal']|brl }}</span></div>
+      {% if order['discount'] %}<div class="order-line"><span>Desconto Pix</span><span>− R$ {{ order['discount']|brl }}</span></div>{% endif %}
+      <div class="order-line"><span>Frete {{ SHIPPING_LABELS()[order['shipping_method']] }}</span><span>{% if order['shipping_price'] %}R$ {{ order['shipping_price']|brl }}{% else %}Grátis{% endif %}</span></div>
+      <div class="order-line order-total"><span>Total</span><span>R$ {{ order['total']|brl }}</span></div>
+      <p class="order-hint">Entrega em <strong>{{ order['ship_address'] }}{% if order['ship_complement'] %}, {{ order['ship_complement'] }}{% endif %} — {{ order['ship_neighborhood'] }}, {{ order['ship_city'] }}/{{ order['ship_state'] }}</strong>. Guarde o link desta página para acompanhar o pedido.</p>
+    </div>
+
+    <div class="confirmation-actions">
+      <a href="{{ url_for('vortex7.produtos') }}" class="btn btn-primary btn-lg">CONTINUAR COMPRANDO</a>
+      <a href="{{ url_for('vortex7.index') }}" class="btn btn-outline btn-lg">VOLTAR AO INÍCIO</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var btn = document.getElementById("copyPix"), box = document.getElementById("pixCode");
+  if (!btn || !box) return;
+  btn.addEventListener("click", function () {
+    var done = function () { btn.textContent = "COPIADO ✓"; setTimeout(function () { btn.textContent = "COPIAR CÓDIGO"; }, 2200); };
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(box.value).then(done); }
+    else { box.select(); document.execCommand("copy"); done(); }
+  });
+})();
+</script>
+{% endblock %}

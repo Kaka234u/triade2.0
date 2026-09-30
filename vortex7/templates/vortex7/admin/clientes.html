@@ -1,0 +1,19 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Clientes</h1><p class="adm-sub">Contas cadastradas na loja ({{ customers|length }})</p></div></div>
+<div class="adm-card">
+  {% if customers %}
+  <div class="adm-table-wrap"><table class="adm-table">
+    <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cidade/UF</th><th>Desde</th><th class="num">Pedidos</th><th class="num">Total pago</th></tr></thead>
+    <tbody>
+    {% for c in customers %}
+    <tr><td>{{ c['name'] }}</td><td>{{ c['email'] }}</td><td>{{ c['phone'] or '—' }}</td>
+        <td>{% if c['city'] %}{{ c['city'] }}/{{ c['state'] }}{% else %}—{% endif %}</td>
+        <td>{{ c['created_at']|dt(False) }}</td><td class="num">{{ c['orders_n'] }}</td><td class="num">R$ {{ c['spent']|brl }}</td></tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}<p class="adm-empty">Nenhum cliente cadastrado ainda.</p>{% endif %}
+</div>
+<p style="color:var(--text-3);font-size:12.5px;margin-top:12px">Compras feitas sem criar conta aparecem em Pedidos.</p>
+{% endblock %}

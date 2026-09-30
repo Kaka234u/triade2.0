@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>{% block title %}Painel{% endblock %} | VORTEX 7 Admin</title>
+<link rel="icon" type="image/jpeg" href="{{ url_for('vortex7.static', filename='images/logo/logo.jpg') }}">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('vortex7.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('vortex7.static', filename='css/admin.css') }}">
+</head>
+<body class="adm">
+{% macro nav(endpoint, label, prefix, count=0) %}
+  <a href="{{ url_for(endpoint) }}" class="{% if request.endpoint.startswith(prefix) %}active{% endif %}">
+    <span>{{ label }}</span>{% if count %}<span class="adm-count">{{ count }}</span>{% endif %}
+  </a>
+{% endmacro %}
+
+<div class="adm-shell">
+  <aside class="adm-side">
+    <div class="adm-brand">
+      <img src="{{ url_for('vortex7.static', filename='images/logo/logo.jpg') }}" alt="VORTEX 7">
+      <div><strong>VORTEX 7</strong><small>Painel admin</small></div>
+    </div>
+    <nav class="adm-nav">
+      {{ nav('vortex7.admin.dashboard', 'Visão geral', 'vortex7.admin.dashboard') }}
+      {{ nav('vortex7.admin.orders', 'Pedidos', 'vortex7.admin.order', adm_pending_orders) }}
+      {{ nav('vortex7.admin.products', 'Produtos', 'vortex7.admin.product') }}
+      {{ nav('vortex7.admin.categories', 'Categorias', 'vortex7.admin.categor') }}
+      {{ nav('vortex7.admin.customers', 'Clientes', 'vortex7.admin.customers') }}
+      {{ nav('vortex7.admin.messages', 'Mensagens', 'vortex7.admin.message', adm_unread) }}
+      {{ nav('vortex7.admin.settings', 'Configurações', 'vortex7.admin.settings') }}
+    </nav>
+    <div class="adm-side-foot">
+      <a href="{{ url_for('vortex7.index') }}" target="_blank" rel="noopener">Ver loja ↗</a>
+      <span>{{ admin['email'] }}</span>
+      <form method="post" action="{{ url_for('vortex7.admin.logout') }}">{{ csrf_input() }}
+        <button class="btn btn-outline btn-sm btn-block" type="submit">Sair</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="adm-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="flash-container">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}"><span>{{ message }}</span><button class="flash-close" aria-label="Fechar">&times;</button></div>
+        {% endfor %}</div>{% endif %}
+    {% endwith %}
+    {% if adm_test_mode %}
+    <div class="adm-banner"><strong>Modo teste ativo:</strong> os pagamentos são simulados e nenhuma cobrança real acontece. Configure os meios de pagamento e desligue o modo teste em <a href="{{ url_for('vortex7.admin.settings') }}">Configurações</a> antes de vender de verdade.</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="{{ url_for('vortex7.static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

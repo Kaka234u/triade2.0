@@ -158,7 +158,7 @@
 
   <div class="container footer-bottom">
     <p>&copy; {{ 2026 }} VORTEX 7. Todos os direitos reservados.</p>
-    <p class="footer-disclaimer"><a href="{{ url_for('vortex7.politicas') }}">Políticas de Uso</a> · Loja demonstrativa — versão 1 (V1).</p>
+    <p class="footer-disclaimer"><a href="{{ url_for('vortex7.politicas') }}">Políticas de Uso</a>{% if store_test_mode %} · Loja em modo de demonstração — pagamentos simulados.{% endif %}</p>
   </div>
 </footer>
 

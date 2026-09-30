@@ -1,0 +1,130 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Pedido {{ order['number'] }}{% endblock %}
+{% block content %}
+<div class="adm-head">
+  <div>
+    <h1>Pedido {{ order['number'] }}</h1>
+    <p class="adm-sub">Criado em {{ order['created_at']|dt }}
+      · <span class="adm-badge b-{{ order['status'] }}">{{ STATUS_LABELS()[order['status']] }}</span>
+      <span class="adm-badge b-{{ order['payment_status'] }}">Pgto: {{ PAYMENT_LABELS()[order['payment_status']] }}</span></p>
+  </div>
+  <div class="adm-actions">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.comprovante', number=order['number']) }}" target="_blank" rel="noopener">Comprovante</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.comprovante_pdf', number=order['number'], download=1) }}">Baixar PDF</a>
+    {% if whatsapp %}<a class="btn btn-outline btn-sm" href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener">WhatsApp do cliente</a>{% endif %}
+    <a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.admin.orders') }}">← Pedidos</a>
+  </div>
+</div>
+
+<div class="adm-grid g2">
+  <div>
+    <div class="adm-card">
+      <h2>Itens</h2>
+      <div class="adm-table-wrap"><table class="adm-table">
+        <thead><tr><th>Produto</th><th class="num">Qtd</th><th class="num">Unitário</th><th class="num">Total</th></tr></thead>
+        <tbody>
+        {% for it in items %}
+        <tr><td>{{ it['name'] }}{% if it['size'] or it['color'] %}<br><small style="color:var(--text-3)">{{ [it['size'], it['color']]|select|join(' / ') }}</small>{% endif %}</td>
+            <td class="num">{{ it['qty'] }}</td><td class="num">R$ {{ it['unit_price']|brl }}</td><td class="num">R$ {{ it['line_total']|brl }}</td></tr>
+        {% endfor %}
+        </tbody></table></div>
+      <dl class="adm-kv" style="margin-top:16px;max-width:340px;margin-left:auto">
+        <dt>Subtotal</dt><dd class="num">R$ {{ order['subtotal']|brl }}</dd>
+        {% if order['discount'] %}<dt>Desconto Pix</dt><dd>− R$ {{ order['discount']|brl }}</dd>{% endif %}
+        <dt>Frete {{ SHIPPING_LABELS()[order['shipping_method']] }}</dt><dd>{% if order['shipping_price'] %}R$ {{ order['shipping_price']|brl }}{% else %}Grátis{% endif %}</dd>
+        <dt><strong>Total</strong></dt><dd><strong style="color:var(--green-400);font-size:18px">R$ {{ order['total']|brl }}</strong></dd>
+      </dl>
+    </div>
+
+    <div class="adm-card">
+      <h2>Cliente e entrega</h2>
+      <dl class="adm-kv">
+        <dt>Nome</dt><dd>{{ order['customer_name'] }}</dd>
+        <dt>E-mail</dt><dd>{{ order['customer_email'] }}</dd>
+        <dt>Telefone</dt><dd>{{ order['customer_phone'] or '—' }}</dd>
+        <dt>CPF</dt><dd>{{ order['customer_cpf'] or '—' }}</dd>
+        <dt>Endereço</dt><dd>{{ order['ship_address'] }}{% if order['ship_complement'] %}, {{ order['ship_complement'] }}{% endif %}<br>{{ order['ship_neighborhood'] }} — {{ order['ship_city'] }}/{{ order['ship_state'] }}<br>CEP {{ order['ship_cep'][:5] }}-{{ order['ship_cep'][5:] }}</dd>
+        <dt>Envio</dt><dd>{{ SHIPPING_LABELS()[order['shipping_method']] }} · {{ order['shipping_days'] }} dias úteis</dd>
+        {% if order['customer_notes'] %}<dt>Observação do cliente</dt><dd>{{ order['customer_notes'] }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if order['payment_method'] == 'pix' and order['pix_payload'] and order['payment_status'] == 'pendente' %}
+    <div class="adm-card">
+      <h2>Pix copia e cola</h2>
+      <code style="display:block;font-size:11px;word-break:break-all;background:var(--bg-1);padding:10px;border-radius:6px">{{ order['pix_payload'] }}</code>
+      <p style="color:var(--text-2);font-size:13px;margin:10px 0 0">Depois de ver o valor de R$ {{ order['total']|brl }} entrar na conta, clique em “Confirmar pagamento” ao lado.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="adm-card">
+      <h2>Pagamento — {{ METHOD_LABELS()[order['payment_method']] }}</h2>
+      {% if order['payment_status'] == 'pendente' and order['status'] != 'cancelado' %}
+      <form method="post" action="{{ url_for('vortex7.admin.order_payment', oid=order['id']) }}" style="margin-bottom:12px">
+        {{ csrf_input() }}<input type="hidden" name="payment_status" value="pago">
+        <button class="btn btn-primary btn-block" type="submit" onclick="return confirm('Confirmar que o pagamento de R$ {{ order['total']|brl }} foi recebido?')">CONFIRMAR PAGAMENTO</button>
+      </form>
+      {% endif %}
+      {% if mp_ready and order['payment_status'] == 'pendente' %}
+      <form method="post" action="{{ url_for('vortex7.admin.order_check_mp', oid=order['id']) }}" style="margin-bottom:12px">
+        {{ csrf_input() }}<button class="btn btn-outline btn-block btn-sm" type="submit">Verificar no Mercado Pago</button>
+      </form>
+      {% endif %}
+      <form method="post" action="{{ url_for('vortex7.admin.order_payment', oid=order['id']) }}" class="adm-inline">
+        {{ csrf_input() }}
+        <select name="payment_status" style="flex:1;background:var(--bg-1);border:1px solid var(--line);color:var(--text-0);border-radius:6px;padding:8px">
+          {% for key, label in PAYMENT_LABELS().items() %}<option value="{{ key }}" {% if key == order['payment_status'] %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-outline btn-sm" type="submit">Alterar</button>
+      </form>
+      {% if order['paid_at'] %}<p style="color:var(--text-2);font-size:13px;margin:10px 0 0">Pago em {{ order['paid_at']|dt }}</p>{% endif %}
+      {% if order['mp_payment_id'] %}<p style="color:var(--text-3);font-size:12px;margin:4px 0 0">Mercado Pago #{{ order['mp_payment_id'] }}</p>{% endif %}
+    </div>
+
+    <div class="adm-card">
+      <h2>Status do pedido</h2>
+      {% if order['status'] == 'cancelado' %}
+        <p style="color:var(--text-2);font-size:14px;margin:0">Pedido cancelado. O estoque foi devolvido e o pedido não pode ser reaberto.</p>
+      {% else %}
+      <form method="post" action="{{ url_for('vortex7.admin.order_status', oid=order['id']) }}" class="adm-form">
+        {{ csrf_input() }}
+        <select name="status">
+          {% for key, label in STATUS_LABELS().items() %}<option value="{{ key }}" {% if key == order['status'] %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <input type="text" name="note" maxlength="200" placeholder="Observação (opcional)">
+        <button class="btn btn-outline btn-sm" type="submit">Atualizar status</button>
+      </form>
+      <p style="color:var(--text-3);font-size:12px;margin:10px 0 0">Escolher “Cancelado” devolve os itens ao estoque.</p>
+      {% endif %}
+    </div>
+
+    <div class="adm-card">
+      <h2>Rastreio</h2>
+      <form method="post" action="{{ url_for('vortex7.admin.order_tracking', oid=order['id']) }}" class="adm-form">
+        {{ csrf_input() }}
+        <input type="text" name="tracking_code" value="{{ order['tracking_code'] or '' }}" maxlength="60" placeholder="Código dos Correios">
+        <label class="check"><input type="checkbox" name="mark_shipped" checked> Marcar como “Enviado”</label>
+        <button class="btn btn-outline btn-sm" type="submit">Salvar rastreio</button>
+      </form>
+    </div>
+
+    <div class="adm-card">
+      <h2>Observação interna</h2>
+      <form method="post" action="{{ url_for('vortex7.admin.order_note', oid=order['id']) }}" class="adm-form">
+        {{ csrf_input() }}
+        <textarea name="admin_notes" maxlength="2000" placeholder="Visível só para a equipe">{{ order['admin_notes'] or '' }}</textarea>
+        <button class="btn btn-outline btn-sm" type="submit">Salvar</button>
+      </form>
+    </div>
+
+    <div class="adm-card">
+      <h2>Histórico</h2>
+      <ul class="adm-timeline">
+        {% for e in events %}<li>{{ e['message'] }}<small>{{ e['created_at']|dt }} · {{ e['actor'] }}</small></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

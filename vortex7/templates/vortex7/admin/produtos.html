@@ -1,0 +1,38 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Produtos{% endblock %}
+{% block content %}
+<div class="adm-head">
+  <div><h1>Produtos</h1><p class="adm-sub">{{ products|length }} produto{{ '' if products|length == 1 else 's' }}</p></div>
+  <div class="adm-actions"><a class="btn btn-primary btn-sm" href="{{ url_for('vortex7.admin.product_new') }}">+ NOVO PRODUTO</a></div>
+</div>
+<form class="adm-filter" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Buscar produto pelo nome">
+  <select name="estoque"><option value="">Todo o estoque</option><option value="baixo" {% if only_low %}selected{% endif %}>Estoque baixo (≤ {{ low }})</option></select>
+  <button class="btn btn-outline btn-sm" type="submit">FILTRAR</button>
+</form>
+<div class="adm-card">
+  {% if products %}
+  <div class="adm-table-wrap"><table class="adm-table">
+    <thead><tr><th></th><th>Produto</th><th>Categoria</th><th class="num">Preço</th><th>Estoque</th><th></th></tr></thead>
+    <tbody>
+    {% for p in products %}
+    <tr>
+      <td><img class="thumb" src="{{ product_img(p) }}" alt=""></td>
+      <td><a class="link" href="{{ url_for('vortex7.admin.product_edit', pid=p['id']) }}">{{ p['name'] }}</a>{% if p['featured'] %} <span class="adm-badge">destaque</span>{% endif %}</td>
+      <td>{{ p['category_name'] }}</td>
+      <td class="num">{% if p['promo_price'] %}<s style="color:var(--text-3)">R$ {{ p['price']|brl }}</s><br>R$ {{ p['promo_price']|brl }}{% else %}R$ {{ p['price']|brl }}{% endif %}</td>
+      <td>
+        <form method="post" action="{{ url_for('vortex7.admin.product_stock', pid=p['id']) }}" class="adm-inline">
+          {{ csrf_input() }}
+          <input type="number" name="stock" min="0" value="{{ p['stock'] }}" aria-label="Estoque">
+          <button class="btn btn-outline btn-sm" type="submit">OK</button>
+          {% if p['stock'] == 0 %}<span class="adm-badge b-cancelado">esgotado</span>{% elif p['stock'] <= low %}<span class="adm-badge b-pendente">baixo</span>{% endif %}
+        </form>
+      </td>
+      <td class="num"><a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.admin.product_edit', pid=p['id']) }}">Editar</a></td>
+    </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}<p class="adm-empty">Nenhum produto encontrado.</p>{% endif %}
+</div>
+{% endblock %}

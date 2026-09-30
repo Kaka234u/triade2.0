@@ -1110,3 +1110,60 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .confirmation-actions { flex-direction: column; width: 100%; }
   .confirmation-actions .btn { width: 100%; }
 }
+
+/* ==========================================================================
+   Checkout — dados do cliente / endereço
+   ========================================================================== */
+.checkout-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.checkout-fields .span-2 { grid-column: 1 / -1; }
+.checkout-fields .form-group input[readonly] { opacity: 0.7; cursor: not-allowed; }
+.field-help { color: var(--text-3); font-size: 12px; }
+.field-help a { color: var(--green-400); text-decoration: underline; }
+.checkout-option.is-disabled { opacity: 0.45; cursor: not-allowed; }
+.checkout-option.is-disabled div span { color: var(--red-500); }
+@media (max-width: 640px) { .checkout-fields { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   Página do pedido (pagamento / acompanhamento)
+   ========================================================================== */
+.order-section { padding: 40px 0 80px; }
+.order-wrap { max-width: 720px; margin: 0 auto; display: grid; gap: 22px; }
+.order-hero { text-align: center; padding: 40px 20px 10px; }
+.order-hero .confirmation-icon { color: var(--green-400); margin: 0 auto 14px; width: 76px; height: 76px; border-radius: 50%;
+  background: rgba(57,255,106,.1); display: flex; align-items: center; justify-content: center; }
+.order-hero.is-cancelled .confirmation-icon { color: var(--red-500); background: rgba(239,68,68,.1); }
+.order-hero h1 { font-family: var(--font-display); font-size: clamp(28px, 5vw, 40px); margin-bottom: 10px; }
+.order-status-line { color: var(--text-2); font-size: 14px; }
+.order-pill { display: inline-block; padding: 3px 12px; border-radius: var(--radius-pill); background: var(--bg-3); color: var(--text-0); font-size: 12.5px; font-weight: 700; }
+.order-alert { background: rgba(245,185,66,.1); border: 1px solid rgba(245,185,66,.4); border-radius: var(--radius-md);
+  padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; color: var(--amber-400); font-size: 14px; }
+.order-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; }
+.order-card h2 { font-size: 18px; margin-bottom: 14px; }
+.order-card-head { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.order-card-head h2 { margin: 0; }
+.order-doc-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.order-doc-actions .btn { padding: 10px 18px; font-size: 12.5px; }
+.order-line { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.order-line small { color: var(--text-3); }
+.order-total { border-top: 1px solid var(--line); border-bottom: none; margin-top: 4px; padding-top: 12px; font-weight: 700; font-size: 17px; color: var(--green-400); }
+.order-hint { color: var(--text-2); font-size: 12.5px; margin: 14px 0 0; line-height: 1.6; }
+
+.pix-box { display: grid; grid-template-columns: 190px 1fr; gap: 24px; align-items: start; }
+.pix-qr { background: #fff; border-radius: var(--radius-md); padding: 12px; }
+.pix-qr svg { width: 100%; height: auto; display: block; }
+.pix-info ol { margin: 0 0 14px; padding-left: 18px; color: var(--text-1); font-size: 13.5px; display: grid; gap: 4px; }
+.pix-info label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
+.pix-info textarea { width: 100%; resize: none; background: var(--bg-1); border: 1px solid var(--line); color: var(--text-1);
+  border-radius: var(--radius-sm); padding: 10px; font-size: 11px; font-family: monospace; margin-bottom: 10px; }
+@media (max-width: 640px) { .pix-box { grid-template-columns: 1fr; } .pix-qr { max-width: 220px; margin: 0 auto; } }
+
+/* ==========================================================================
+   Minha Conta — histórico de pedidos
+   ========================================================================== */
+.account-orders { display: grid; gap: 10px; }
+.account-order { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 14px 16px; transition: border-color .15s; }
+.account-order:hover { border-color: var(--green-400); }
+.account-order > div:first-child { display: flex; flex-direction: column; gap: 2px; }
+.account-order > div:first-child span { color: var(--text-3); font-size: 12px; }
+.account-order-total { color: var(--green-400); font-size: 15px; }

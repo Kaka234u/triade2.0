@@ -30,11 +30,13 @@
 
             <div class="cart-item-actions">
               <form action="{{ url_for('vortex7.atualizar_carrinho', key=item.key) }}" method="post" class="qty-selector qty-selector-sm">
+{{ csrf_input() }}
                 <button type="submit" name="quantidade" value="{{ item.qty - 1 if item.qty > 1 else 1 }}" class="qty-btn" aria-label="Diminuir">−</button>
                 <input type="number" value="{{ item.qty }}" readonly>
                 <button type="submit" name="quantidade" value="{{ item.qty + 1 }}" class="qty-btn" aria-label="Aumentar">+</button>
               </form>
               <form action="{{ url_for('vortex7.remover_carrinho', key=item.key) }}" method="post">
+{{ csrf_input() }}
                 <button type="submit" class="cart-remove-btn">Remover</button>
               </form>
             </div>
@@ -47,6 +49,7 @@
       <aside class="cart-summary">
         <h3>Calcular Frete</h3>
         <form action="{{ url_for('vortex7.calcular_frete_route') }}" method="post" class="frete-form">
+{{ csrf_input() }}
           <input type="text" name="cep" placeholder="Digite seu CEP" maxlength="9" required
                  value="{{ session.get('frete', {}).get('cep', '') }}">
           <button type="submit" class="btn btn-outline">CALCULAR</button>

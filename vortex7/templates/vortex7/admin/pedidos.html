@@ -1,0 +1,54 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Pedidos{% endblock %}
+{% block content %}
+{% macro tab(value, label) %}
+<a href="{{ url_for('vortex7.admin.orders', status=value, pagamento=pay, q=q) }}" class="{% if status == value %}active{% endif %}">{{ label }}{% if value and counts.get(value) %} ({{ counts[value] }}){% endif %}</a>
+{% endmacro %}
+<div class="adm-head">
+  <div><h1>Pedidos</h1><p class="adm-sub">{{ total }} pedido{{ '' if total == 1 else 's' }} encontrado{{ '' if total == 1 else 's' }}</p></div>
+  <div class="adm-actions"><a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.admin.orders_export', status=status, pagamento=pay, q=q) }}">Exportar CSV</a></div>
+</div>
+
+<div class="adm-tabs">
+  {{ tab('', 'Todos') }}
+  {% for key, label in STATUS_LABELS().items() %}{{ tab(key, label) }}{% endfor %}
+</div>
+
+<form class="adm-filter" method="get">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nº do pedido, nome, e-mail ou telefone">
+  <select name="pagamento">
+    <option value="">Todos os pagamentos</option>
+    {% for key, label in PAYMENT_LABELS().items() %}<option value="{{ key }}" {% if pay == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-outline btn-sm" type="submit">FILTRAR</button>
+</form>
+
+<div class="adm-card">
+  {% if orders %}
+  <div class="adm-table-wrap"><table class="adm-table">
+    <thead><tr><th>Pedido</th><th>Data</th><th>Cliente</th><th>Forma</th><th class="num">Total</th><th>Pagamento</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+    <tr>
+      <td><a class="link" href="{{ url_for('vortex7.admin.order_detail', oid=o['id']) }}">{{ o['number'] }}</a></td>
+      <td>{{ o['created_at']|dt }}</td>
+      <td>{{ o['customer_name'] }}<br><small style="color:var(--text-3)">{{ o['ship_city'] }}/{{ o['ship_state'] }}</small></td>
+      <td>{{ METHOD_LABELS()[o['payment_method']] }}</td>
+      <td class="num">R$ {{ o['total']|brl }}</td>
+      <td><span class="adm-badge b-{{ o['payment_status'] }}">{{ PAYMENT_LABELS()[o['payment_status']] }}</span></td>
+      <td><span class="adm-badge b-{{ o['status'] }}">{{ STATUS_LABELS()[o['status']] }}</span></td>
+    </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}<p class="adm-empty">Nenhum pedido encontrado com esses filtros.</p>{% endif %}
+</div>
+
+{% if pages > 1 %}
+<div class="adm-pager">
+  {% if page > 1 %}<a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.admin.orders', status=status, pagamento=pay, q=q, p=page-1) }}">← Anterior</a>{% endif %}
+  <span>Página {{ page }} de {{ pages }}</span>
+  {% if page < pages %}<a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.admin.orders', status=status, pagamento=pay, q=q, p=page+1) }}">Próxima →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

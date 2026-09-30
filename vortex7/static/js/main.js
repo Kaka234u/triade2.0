@@ -127,7 +127,7 @@
       { keys: ["pagamento", "pagar", "cartao", "cartão", "pix", "boleto", "parcela"], reply: "Aceitamos Pix (5% de desconto), cartão de crédito em até 3x sem juros e boleto bancário. Você escolhe a forma na tela de checkout. 💳" },
       { keys: ["troca", "devolu", "cancelar", "cancelamento"], reply: "Você tem até 30 dias corridos após o recebimento para solicitar troca ou devolução, desde que o produto esteja sem uso. Veja mais na nossa página de Políticas de Uso. 🔄" },
       { keys: ["tamanho", "numeracao", "numeração", "medida"], reply: "Cada produto tem suas opções de tamanho na própria página do produto. Se ficar em dúvida entre dois tamanhos, recomendamos escolher o maior para melhor caimento. 👕" },
-      { keys: ["rastre", "pedido", "status", "acompanhar"], reply: "O rastreio de pedidos ainda não está disponível nesta versão de demonstração da loja — já está nos nossos planos! 🚧" },
+      { keys: ["rastre", "pedido", "status", "acompanhar"], reply: "Depois da compra você recebe um link para acompanhar o pedido e o comprovante. Com conta na loja, todos os seus pedidos ficam em Minha Conta, com o código de rastreio quando enviado. 📦" },
       { keys: ["atendente", "humano", "pessoa", "falar com"], reply: "Sem problemas! Preencha o formulário na nossa Central de Atendimento que nossa equipe responde em até 24h úteis. Quer que eu te leve até lá?" },
       { keys: ["desconto", "cupom", "promo", "oferta"], reply: "Nossas ofertas ativas ficam na aba Ofertas do menu principal — sempre com bons descontos em itens selecionados! 🔥" },
       { keys: ["conta", "cadastro", "login", "senha"], reply: "Você pode criar sua conta ou entrar pelo ícone de perfil no topo da página. Leva menos de um minuto! 👤" },

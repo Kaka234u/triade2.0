@@ -1,0 +1,55 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}{{ 'Editar produto' if product else 'Novo produto' }}{% endblock %}
+{% block content %}
+<div class="adm-head">
+  <div><h1>{{ 'Editar produto' if product else 'Novo produto' }}</h1></div>
+  <div class="adm-actions"><a class="btn btn-outline btn-sm" href="{{ url_for('vortex7.admin.products') }}">← Produtos</a></div>
+</div>
+<div class="adm-grid g2">
+  <div class="adm-card">
+    <form method="post" enctype="multipart/form-data" class="adm-form">
+      {{ csrf_input() }}
+      <label>Nome <input type="text" name="name" required maxlength="150" value="{{ v.get('name', '') }}"></label>
+      <label>Descrição <textarea name="description" maxlength="2000">{{ v.get('description', '') or '' }}</textarea></label>
+      <div class="row">
+        <label>Preço (R$) <input type="text" name="price" inputmode="decimal" required placeholder="399,90" value="{{ v.get('price', '') }}"></label>
+        <label>Preço promocional (R$) <small>opcional</small> <input type="text" name="promo_price" inputmode="decimal" placeholder="319,90" value="{{ v.get('promo_price', '') }}"></label>
+        <label>Estoque <input type="number" name="stock" min="0" required value="{{ v.get('stock', 0) }}"></label>
+      </div>
+      <div class="row">
+        <label>Categoria
+          <select name="category_id" required>
+            <option value="">Escolha…</option>
+            {% for c in categories %}<option value="{{ c['id'] }}" {% if v.get('category_id')|string == c['id']|string %}selected{% endif %}>{{ c['name'] }}</option>{% endfor %}
+          </select>
+        </label>
+        <label>Tamanhos <small>separados por vírgula</small> <input type="text" name="sizes" placeholder="P,M,G ou 38,39,40" value="{{ v.get('sizes', '') or '' }}"></label>
+        <label>Cores <small>separadas por vírgula</small> <input type="text" name="colors" placeholder="Preto,Verde" value="{{ v.get('colors', '') or '' }}"></label>
+      </div>
+      <label class="check"><input type="checkbox" name="featured" value="1" {% if v.get('featured') %}checked{% endif %}> Mostrar em destaque na página inicial</label>
+      <label>Foto principal <small>JPG, PNG ou WEBP até 5 MB{% if product %} — enviar uma nova substitui a atual{% endif %}</small>
+        <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+      <div class="adm-actions">
+        <button class="btn btn-primary" type="submit">SALVAR</button>
+        <a class="btn btn-outline" href="{{ url_for('vortex7.admin.products') }}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+  {% if product %}
+  <div>
+    <div class="adm-card">
+      <h2>Foto atual</h2>
+      <img src="{{ product_img(product) }}" alt="" style="width:100%;border-radius:10px;background:var(--bg-3)">
+      <p style="color:var(--text-3);font-size:12px;margin:10px 0 0">Fotos extras da galeria: coloque arquivos com o mesmo nome-base + <code>_2</code>, <code>_3</code>… na pasta <code>static/images/products</code>.</p>
+    </div>
+    <div class="adm-card">
+      <h2>Zona de perigo</h2>
+      <form method="post" action="{{ url_for('vortex7.admin.product_delete', pid=product['id']) }}">
+        {{ csrf_input() }}
+        <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('Excluir este produto? Pedidos antigos continuam guardando os dados dele.')">Excluir produto</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,13 +1,22 @@
+import hmac
 import os
-import random
+import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, g
+from flask import (Blueprint, render_template, request, redirect, url_for, session, flash, g,
+                   abort, jsonify, send_file, make_response)
 from werkzeug.security import generate_password_hash, check_password_hash
+import io
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "database.db")
+from . import payments
+from .common import (BASE_DIR, DB_PATH, PRODUCT_IMG_DIR, PHOTO_EXTS, csrf_input, ensure_admin, ensure_schema,
+                     external_url, fmt_datetime, format_brl, get_db, is_admin_session, load_settings, now_iso,
+                     only_digits, safe_next_url, valid_cpf, verify_csrf)
+from .orders import (OrderError, PAYMENT_LABELS, SHIPPING_LABELS, STATUS_LABELS, apply_mp_payment, calcular_frete,
+                     cart_lines, compute_totals, create_order, get_order_by_number, get_order_events,
+                     get_order_items, mark_paid, sync_with_mercadopago)
+from .payments import PaymentError
 
 # Blueprint da VORTEX 7 — montado em /vortex7 pelo app principal do portal.
 # template_folder/static_folder apontam para as pastas locais deste módulo.
@@ -23,18 +32,14 @@ app = Blueprint(
     static_url_path="/static",
 )
 
+# Proteção CSRF em todos os POSTs do módulo (loja + admin)
+app.before_request(verify_csrf)
+app.add_app_template_global(csrf_input, name="csrf_input")
+
 
 # ---------------------------------------------------------------------------
 # Banco de dados
 # ---------------------------------------------------------------------------
-
-def get_db():
-    if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA foreign_keys = ON")
-    return g.db
-
 
 @app.teardown_app_request
 def close_db(exception=None):
@@ -199,6 +204,8 @@ def init_db():
             )
             conn.commit()
 
+    ensure_schema(conn)
+    ensure_admin(conn)
     conn.close()
     return is_new
 
@@ -234,6 +241,7 @@ def inject_globals():
         "nav_categories": categories,
         "cart_count": cart_count(),
         "current_user": session.get("user_name"),
+        "store_test_mode": load_settings(db).get("test_mode") == "1",
     }
 
 
@@ -246,8 +254,6 @@ def inject_globals():
 # usado no lugar do SVG. Fotos extras da galeria: <nome-base>_2, _3, ... _6.
 # Sem foto na pasta, o SVG placeholder continua aparecendo (nada quebra).
 
-PRODUCT_IMG_DIR = os.path.join(BASE_DIR, "static", "images", "products")
-PHOTO_EXTS = ("webp", "jpg", "jpeg", "png", "avif")
 MAX_GALLERY = 6
 
 
@@ -272,6 +278,8 @@ def _static_url(fname):
 def product_img(product):
     """URL da imagem principal (foto real se existir, senão o SVG do banco)."""
     image = product["image"] or ""
+    if not image:
+        return _static_url("placeholder.svg")
     base = os.path.splitext(image)[0]
     return _static_url(_find_photo(base) or image)
 
@@ -282,6 +290,8 @@ def product_gallery(product):
     image = product["image"] or ""
     base = os.path.splitext(image)[0]
     urls = [product_img(product)]
+    if not image:
+        return urls
     for n in range(2, MAX_GALLERY + 1):
         extra = _find_photo(f"{base}_{n}")
         if extra:
@@ -298,7 +308,18 @@ def discount_percent(price, promo_price):
 
 @app.app_template_filter("brl")
 def format_price(value):
-    return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return format_brl(value)
+
+
+@app.app_template_filter("dt")
+def _dt_filter(value, with_time=True):
+    return fmt_datetime(value, with_time)
+
+
+app.add_app_template_global(lambda: STATUS_LABELS, name="STATUS_LABELS")
+app.add_app_template_global(lambda: PAYMENT_LABELS, name="PAYMENT_LABELS")
+app.add_app_template_global(lambda: payments.METHOD_LABELS, name="METHOD_LABELS")
+app.add_app_template_global(lambda: SHIPPING_LABELS, name="SHIPPING_LABELS")
 
 
 # ---------------------------------------------------------------------------
@@ -546,7 +567,7 @@ def login():
             session["user_id"] = user["id"]
             session["user_name"] = user["name"]
             flash(f"Bem-vindo(a) de volta, {user['name']}!", "success")
-            next_url = request.args.get("next") or url_for("vortex7.index")
+            next_url = safe_next_url(request.args.get("next"), url_for("vortex7.index"))
             return redirect(next_url)
 
         flash("E-mail ou senha inválidos.", "error")
@@ -570,7 +591,10 @@ def minha_conta():
 
     db = get_db()
     user = db.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
-    return render_template("vortex7/minha_conta.html", user=user)
+    my_orders = db.execute(
+        "SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC LIMIT 50", (session["user_id"],)
+    ).fetchall()
+    return render_template("vortex7/minha_conta.html", user=user, orders=my_orders)
 
 
 @app.route("/minha-conta/editar", methods=["POST"])
@@ -599,44 +623,6 @@ def editar_conta():
 # Frete (cálculo estimado, sem API externa)
 # ---------------------------------------------------------------------------
 
-def calcular_frete(cep, subtotal, item_count):
-    """Estimativa determinística de frete a partir do CEP.
-    Não usa serviços externos: simula faixas por região (1º dígito do CEP)
-    e ajusta pelo valor/volume da compra.
-    """
-    digits = "".join(ch for ch in cep if ch.isdigit())
-    if len(digits) != 8:
-        return None
-
-    region = int(digits[0])
-    # Faixas aproximadas de regiões dos Correios (0=SP capital/interior ... 9=RS/SC/PR sul)
-    region_base = {
-        0: 18.90, 1: 19.90, 2: 22.90, 3: 16.90, 4: 24.90,
-        5: 27.90, 6: 32.90, 7: 29.90, 8: 26.90, 9: 25.90,
-    }
-    base = region_base.get(region, 24.90)
-    volume_extra = max(0, item_count - 1) * 3.5
-
-    pac_price = round(base + volume_extra, 2)
-    sedex_price = round(pac_price * 1.75, 2)
-
-    frete_gratis = subtotal >= 299.90
-    if frete_gratis:
-        pac_price = 0.0
-
-    pac_days = 5 + (region % 4)
-    sedex_days = 2 + (region % 2)
-
-    return {
-        "cep": digits,
-        "pac_price": pac_price,
-        "pac_days": pac_days,
-        "sedex_price": sedex_price,
-        "sedex_days": sedex_days,
-        "frete_gratis": frete_gratis,
-    }
-
-
 @app.route("/carrinho/frete", methods=["POST"])
 def calcular_frete_route():
     cep = request.form.get("cep", "").strip()
@@ -664,33 +650,125 @@ def calcular_frete_route():
 
 
 # ---------------------------------------------------------------------------
-# Checkout (simulado — sem gateway de pagamento real)
+# Checkout (pedido real: grava no banco, baixa estoque, gera pagamento)
 # ---------------------------------------------------------------------------
 
-@app.route("/checkout")
-def checkout():
+CHECKOUT_FIELDS = ("name", "email", "phone", "cpf", "address", "complement", "neighborhood", "city", "state", "notes")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _format_phone(digits):
+    if len(digits) == 11:
+        return f"({digits[:2]}) {digits[2:7]}-{digits[7:]}"
+    if len(digits) == 10:
+        return f"({digits[:2]}) {digits[2:6]}-{digits[6:]}"
+    return digits
+
+
+def _format_cpf(digits):
+    return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
+
+
+def _checkout_defaults():
+    """Pré-preenche o formulário com os dados da conta (se o cliente estiver logado)."""
+    data = {k: "" for k in CHECKOUT_FIELDS}
+    data.update(envio="pac", pagamento="pix")
+    uid = session.get("user_id")
+    if uid:
+        u = get_db().execute("SELECT * FROM users WHERE id = ?", (uid,)).fetchone()
+        if u:
+            data.update(
+                name=u["name"] or "", email=u["email"] or "", phone=u["phone"] or "",
+                address=u["address"] or "", city=u["city"] or "", state=u["state"] or "",
+            )
+    return data
+
+
+def _render_checkout(form):
     cart = get_cart()
-    if not cart:
+    db = get_db()
+    settings = load_settings(db)
+    lines = cart_lines(db, cart)
+    if not lines:
         flash("Seu carrinho está vazio.", "error")
         return redirect(url_for("vortex7.produtos"))
 
-    frete = session.get("frete")
+    frete_ses = session.get("frete")
+    subtotal = round(sum(l["line_total"] for l in lines), 2)
+    frete = calcular_frete(frete_ses["cep"], subtotal, sum(l["qty"] for l in lines)) if frete_ses else None
     if not frete:
         flash("Calcule o frete no carrinho antes de continuar.", "error")
         return redirect(url_for("vortex7.carrinho"))
+    session["frete"] = frete  # mantém o frete coerente com o carrinho atual
+    session.modified = True
 
-    items = []
-    subtotal = 0.0
-    for key, data in cart.items():
-        p = get_product_or_404(data["product_id"])
-        if not p:
-            continue
-        unit_price = p["promo_price"] if p["promo_price"] else p["price"]
-        line_total = unit_price * data["qty"]
-        subtotal += line_total
-        items.append({"product": p, "qty": data["qty"], "line_total": line_total})
+    methods = payments.available_methods(settings)
+    try:
+        pix_pct = float(settings.get("pix_discount_percent") or 0)
+    except ValueError:
+        pix_pct = 0.0
+    return render_template(
+        "vortex7/checkout.html",
+        items=lines, subtotal=subtotal, frete=frete, form=form, methods=methods,
+        pix_pct=pix_pct, test_mode=settings.get("test_mode") == "1",
+    )
 
-    return render_template("vortex7/checkout.html", items=items, subtotal=subtotal, frete=frete)
+
+@app.route("/checkout")
+def checkout():
+    if not get_cart():
+        flash("Seu carrinho está vazio.", "error")
+        return redirect(url_for("vortex7.produtos"))
+    if not session.get("frete"):
+        flash("Calcule o frete no carrinho antes de continuar.", "error")
+        return redirect(url_for("vortex7.carrinho"))
+    return _render_checkout(_checkout_defaults())
+
+
+def _validate_checkout(form):
+    errors = []
+    if len(form["name"]) < 3:
+        errors.append("Informe seu nome completo.")
+    if not EMAIL_RE.match(form["email"]):
+        errors.append("Informe um e-mail válido.")
+    if len(only_digits(form["phone"])) not in (10, 11):
+        errors.append("Informe um telefone/WhatsApp com DDD.")
+    if form["cpf"] and not valid_cpf(form["cpf"]):
+        errors.append("CPF inválido (ou deixe o campo em branco).")
+    if len(form["address"]) < 5:
+        errors.append("Informe o endereço com número.")
+    if len(form["neighborhood"]) < 2:
+        errors.append("Informe o bairro.")
+    if len(form["city"]) < 2:
+        errors.append("Informe a cidade.")
+    if not (len(form["state"]) == 2 and form["state"].isalpha()):
+        errors.append("Informe a UF com 2 letras.")
+    return errors
+
+
+def _create_mp_link(db, order, settings):
+    """Gera o link de pagamento do Mercado Pago (cartão/boleto). None se falhar."""
+    token = settings.get("mp_access_token", "").strip()
+    if not token:
+        return None
+    from .orders import log_event
+    try:
+        pref_id, init_point = payments.mp_create_preference(
+            order,
+            get_order_items(db, order["id"]),
+            token,
+            success_url=external_url("vortex7.pedido", settings, number=order["number"], t=order["access_token"]),
+            notification_url=external_url("vortex7.webhook_mercadopago", settings),
+        )
+    except PaymentError as exc:
+        log_event(db, order["id"], f"Falha ao gerar link de pagamento: {exc}", "sistema")
+        db.commit()
+        return None
+    db.execute("UPDATE orders SET mp_preference_id=?, mp_init_point=?, updated_at=? WHERE id=?",
+               (pref_id, init_point, now_iso(), order["id"]))
+    log_event(db, order["id"], "Link de pagamento do Mercado Pago gerado.", "sistema")
+    db.commit()
+    return init_point
 
 
 @app.route("/checkout/confirmar", methods=["POST"])
@@ -699,32 +777,211 @@ def checkout_confirmar():
     if not cart:
         flash("Seu carrinho está vazio.", "error")
         return redirect(url_for("vortex7.produtos"))
-
     frete = session.get("frete")
-    envio = request.form.get("envio", "pac")
-    pagamento = request.form.get("pagamento", "pix")
+    if not frete:
+        flash("Calcule o frete no carrinho antes de continuar.", "error")
+        return redirect(url_for("vortex7.carrinho"))
 
-    numero_pedido = f"V7-{random.randint(100000, 999999)}"
+    db = get_db()
+    settings = load_settings(db)
+    form = {k: request.form.get(k, "").strip()[:200] for k in CHECKOUT_FIELDS}
+    form["state"] = form["state"].upper()
+    form["envio"] = "sedex" if request.form.get("envio") == "sedex" else "pac"
+    form["pagamento"] = request.form.get("pagamento", "")
 
-    session["ultimo_pedido"] = {
-        "numero": numero_pedido,
-        "envio": envio,
-        "pagamento": pagamento,
+    errors = _validate_checkout(form)
+    methods = payments.available_methods(settings)
+    if form["pagamento"] not in methods or not methods[form["pagamento"]][0]:
+        errors.append("Escolha uma forma de pagamento disponível.")
+        form["pagamento"] = "pix"
+    if errors:
+        for err in errors:
+            flash(err, "error")
+        return _render_checkout(form)
+
+    phone_digits = only_digits(form["phone"])
+    cpf_digits = only_digits(form["cpf"])
+    customer = {
+        "name": form["name"], "email": form["email"].lower(), "phone": _format_phone(phone_digits),
+        "cpf": _format_cpf(cpf_digits) if cpf_digits else "",
+        "address": form["address"], "complement": form["complement"],
+        "neighborhood": form["neighborhood"], "city": form["city"], "state": form["state"],
+        "notes": form["notes"],
     }
+    try:
+        result = create_order(
+            db, cart, customer, form["envio"], form["pagamento"], frete, settings,
+            user_id=session.get("user_id"),
+        )
+    except OrderError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("vortex7.carrinho"))
+
     session.pop("cart", None)
     session.pop("frete", None)
+    session["last_order"] = {"number": result["number"], "token": result["token"]}
     session.modified = True
 
-    return redirect(url_for("vortex7.pedido_confirmado"))
+    order = get_order_by_number(db, result["number"])
+    if form["pagamento"] in ("cartao", "boleto") and settings.get("test_mode") != "1":
+        init_point = _create_mp_link(db, order, settings)
+        if init_point:
+            return redirect(init_point)
+        flash("Pedido criado! Não conseguimos abrir a página de pagamento agora — use o botão para tentar de novo.", "error")
+    return redirect(url_for("vortex7.pedido", number=result["number"], t=result["token"]))
+
+
+# ---------------------------------------------------------------------------
+# Página do pedido, pagamento e comprovante
+# ---------------------------------------------------------------------------
+
+@app.app_template_global("order_url")
+def order_url(order, endpoint="vortex7.pedido", **extra):
+    return url_for(endpoint, number=order["number"], t=order["access_token"], **extra)
+
+
+def _can_access(order):
+    """Admin, dono logado ou quem tem o link com token do pedido."""
+    if is_admin_session():
+        return True
+    uid = session.get("user_id")
+    if uid and order["user_id"] == uid:
+        return True
+    token = request.args.get("t", "")
+    return bool(token) and hmac.compare_digest(token, order["access_token"])
+
+
+def _load_order_or_404(number):
+    order = get_order_by_number(get_db(), number)
+    if not order or not _can_access(order):
+        abort(404)  # 404 (e não 403) para não revelar que o pedido existe
+    return order
+
+
+def _private(response):
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return response
+
+
+@app.route("/pedido/<number>")
+def pedido(number):
+    db = get_db()
+    order = _load_order_or_404(number)
+    settings = load_settings(db)
+    token = settings.get("mp_access_token", "").strip()
+    real_mp = bool(token) and settings.get("test_mode") != "1"
+
+    # Volta do Mercado Pago: confirma o pagamento direto na API (não confia na URL).
+    mp_pid = request.args.get("payment_id") or request.args.get("collection_id") or ""
+    if real_mp and mp_pid.isdigit() and order["payment_status"] == "pendente":
+        try:
+            apply_mp_payment(db, order, payments.mp_get_payment(mp_pid, token))
+            order = get_order_by_number(db, number)
+        except PaymentError:
+            flash("Ainda não conseguimos confirmar o pagamento; a página será atualizada automaticamente quando ele for aprovado.", "error")
+
+    pending = order["payment_status"] == "pendente" and order["status"] != "cancelado"
+    qr = None
+    if order["payment_method"] == "pix" and order["pix_payload"] and pending:
+        qr = payments.qr_svg(order["pix_payload"])
+    resp = make_response(render_template(
+        "vortex7/pedido.html",
+        order=order, items=get_order_items(db, order["id"]), settings=settings,
+        pending=pending, qr=qr,
+        test_mode=settings.get("test_mode") == "1",
+        can_retry_mp=real_mp and order["payment_method"] in ("cartao", "boleto") and pending,
+    ))
+    return _private(resp)
+
+
+@app.route("/pedido/<number>/pagar", methods=["POST"])
+def pedido_pagar(number):
+    """(Re)gera o link de pagamento do Mercado Pago."""
+    db = get_db()
+    order = _load_order_or_404(number)
+    settings = load_settings(db)
+    if (order["payment_status"] != "pendente" or order["status"] == "cancelado"
+            or order["payment_method"] not in ("cartao", "boleto") or settings.get("test_mode") == "1"):
+        return redirect(order_url(order))
+    init_point = _create_mp_link(db, order, settings)
+    if init_point:
+        return redirect(init_point)
+    flash("Não foi possível abrir a página de pagamento agora. Tente novamente em instantes.", "error")
+    return redirect(order_url(order))
+
+
+@app.route("/pedido/<number>/simular-pagamento", methods=["POST"])
+def pedido_simular(number):
+    """Só existe em MODO TESTE: marca o pedido como pago sem cobrança real."""
+    db = get_db()
+    order = _load_order_or_404(number)
+    settings = load_settings(db)
+    if settings.get("test_mode") != "1":
+        abort(404)
+    if order["payment_status"] == "pendente" and order["status"] != "cancelado":
+        mark_paid(db, order, actor="modo teste", note="(simulado)")
+        flash("Pagamento simulado com sucesso (modo teste).", "success")
+    return redirect(order_url(order))
+
+
+@app.route("/pedido/<number>/comprovante")
+def comprovante(number):
+    db = get_db()
+    order = _load_order_or_404(number)
+    settings = load_settings(db)
+    pending_pix = order["payment_method"] == "pix" and order["payment_status"] == "pendente" and order["pix_payload"]
+    return _private(make_response(render_template(
+        "vortex7/comprovante.html",
+        order=order, items=get_order_items(db, order["id"]), settings=settings,
+        qr=payments.qr_svg(order["pix_payload"]) if pending_pix else None,
+    )))
+
+
+@app.route("/pedido/<number>/comprovante.pdf")
+def comprovante_pdf(number):
+    from .receipt import build_receipt_pdf
+    db = get_db()
+    order = _load_order_or_404(number)
+    pdf = build_receipt_pdf(order, get_order_items(db, order["id"]), load_settings(db))
+    resp = send_file(
+        io.BytesIO(pdf), mimetype="application/pdf",
+        download_name=f"comprovante-{order['number']}.pdf",
+        as_attachment=request.args.get("download") == "1",
+    )
+    return _private(resp)
 
 
 @app.route("/pedido-confirmado")
 def pedido_confirmado():
-    pedido = session.get("ultimo_pedido")
-    if not pedido:
+    """Compatibilidade com o endereço antigo."""
+    last = session.get("last_order")
+    if not last:
         return redirect(url_for("vortex7.index"))
-    return render_template("vortex7/pedido_confirmado.html", pedido=pedido)
+    return redirect(url_for("vortex7.pedido", number=last["number"], t=last["token"]))
 
+
+@app.route("/webhook/mercadopago", methods=["GET", "POST"])
+def webhook_mercadopago():
+    """Notificações do Mercado Pago. Sempre reconsulta a API antes de agir."""
+    db = get_db()
+    settings = load_settings(db)
+    token = settings.get("mp_access_token", "").strip()
+    if not token:
+        return "", 200
+    body = request.get_json(silent=True) or {}
+    topic = body.get("type") or body.get("topic") or request.args.get("type") or request.args.get("topic")
+    payment_id = str((body.get("data") or {}).get("id") or request.args.get("data.id") or request.args.get("id") or "")
+    if topic != "payment" or not payment_id.isdigit():
+        return "", 200
+    try:
+        payment = payments.mp_get_payment(payment_id, token)
+    except PaymentError:
+        return "", 500  # o Mercado Pago tenta de novo mais tarde
+    order = get_order_by_number(db, payment.get("external_reference") or "")
+    if order:
+        apply_mp_payment(db, order, payment)
+    return "", 200
 
 # ---------------------------------------------------------------------------
 # Páginas institucionais
@@ -738,19 +995,27 @@ def politicas():
 @app.route("/atendimento", methods=["GET", "POST"])
 def atendimento():
     if request.method == "POST":
-        nome = request.form.get("nome", "").strip()
-        assunto = request.form.get("assunto", "").strip()
-        mensagem = request.form.get("mensagem", "").strip()
-        if not nome or not mensagem:
-            flash("Preencha nome e mensagem para enviar.", "error")
+        nome = request.form.get("nome", "").strip()[:120]
+        contato = request.form.get("contato", "").strip()[:120]
+        assunto = request.form.get("assunto", "").strip()[:120]
+        mensagem = request.form.get("mensagem", "").strip()[:3000]
+        if not nome or not mensagem or not contato:
+            flash("Preencha nome, contato e mensagem para enviar.", "error")
         else:
+            db = get_db()
+            db.execute(
+                "INSERT INTO messages (name, contact, subject, message, created_at) VALUES (?,?,?,?,?)",
+                (nome, contato, assunto, mensagem, now_iso()),
+            )
+            db.commit()
             flash("Mensagem enviada! Nossa equipe responde em até 24h úteis.", "success")
             return redirect(url_for("vortex7.atendimento"))
     return render_template("vortex7/atendimento.html")
 
 
 # ---------------------------------------------------------------------------
-# Nota: este módulo agora é um Blueprint (não roda sozinho).
-# init_db() é chamado pelo app principal do portal (portal/app.py) durante
-# o startup, dentro do app_context() da aplicação Flask combinada.
+# Painel administrativo (blueprint aninhado -> /vortex7/admin)
 # ---------------------------------------------------------------------------
+from .admin import admin_bp  # noqa: E402  (importado no fim para evitar ciclo)
+
+app.register_blueprint(admin_bp, url_prefix="/admin")

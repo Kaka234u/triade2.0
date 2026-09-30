@@ -9,6 +9,7 @@
     <p class="auth-subtitle">Acesse para acompanhar seus pedidos e favoritos.</p>
 
     <form method="post" class="auth-form">
+{{ csrf_input() }}
       <div class="form-group">
         <label for="email">E-mail</label>
         <input type="email" id="email" name="email" value="{{ email or '' }}" required autofocus>

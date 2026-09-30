@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Entrar | VORTEX 7 Admin</title>
+<link rel="icon" type="image/jpeg" href="{{ url_for('vortex7.static', filename='images/logo/logo.jpg') }}">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('vortex7.static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('vortex7.static', filename='css/admin.css') }}">
+</head>
+<body class="adm">
+<div class="adm-login">
+  <div style="width:100%;max-width:400px">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category }} adm-flash" style="position:static"><span>{{ message }}</span></div>
+      {% endfor %}
+    {% endwith %}
+    <div class="adm-card">
+      <img src="{{ url_for('vortex7.static', filename='images/logo/logo.jpg') }}" alt="VORTEX 7" style="width:52px;border-radius:10px;margin-bottom:14px">
+      <h1>Painel VORTEX 7</h1>
+      <p style="color:var(--text-2);margin:0 0 18px;font-size:14px">Acesso restrito à equipe da loja.</p>
+      <form method="post" class="adm-form" autocomplete="on">
+        {{ csrf_input() }}
+        <label>E-mail <input type="email" name="email" required autofocus autocomplete="username"></label>
+        <label>Senha <input type="password" name="password" required autocomplete="current-password"></label>
+        <button class="btn btn-primary btn-block" type="submit">ENTRAR</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

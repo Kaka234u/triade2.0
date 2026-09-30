@@ -61,6 +61,7 @@
         </div>
 
         <form action="{{ url_for('vortex7.adicionar_carrinho', product_id=p['id']) }}" method="post" class="product-detail-form">
+{{ csrf_input() }}
           {% if sizes %}
           <div class="option-group">
             <label>Tamanho</label>

@@ -1,0 +1,66 @@
+{% extends "vortex7/admin/base.html" %}
+{% block title %}Visão geral{% endblock %}
+{% block content %}
+<div class="adm-head">
+  <div><h1>Visão geral</h1><p class="adm-sub">Resumo da loja em tempo real</p></div>
+  <div class="adm-actions"><a class="btn btn-primary btn-sm" href="{{ url_for('vortex7.admin.orders', status='aguardando_pagamento') }}">Ver pendentes</a></div>
+</div>
+
+<div class="adm-stats">
+  <div class="adm-stat hot"><span>Faturamento do mês</span><strong>R$ {{ stats.revenue_month|brl }}</strong></div>
+  <div class="adm-stat"><span>Pedidos hoje</span><strong>{{ stats.orders_today }}</strong></div>
+  <div class="adm-stat"><span>Aguardando pagamento</span><strong>{{ stats.awaiting_payment }}</strong></div>
+  <div class="adm-stat"><span>Prontos para enviar</span><strong>{{ stats.to_ship }}</strong></div>
+  <div class="adm-stat"><span>Ticket médio</span><strong>R$ {{ stats.avg_ticket|brl }}</strong></div>
+</div>
+
+<div class="adm-grid g2">
+  <div>
+    <div class="adm-card">
+      <h2>Pedidos recentes</h2>
+      {% if recent %}
+      <div class="adm-table-wrap"><table class="adm-table">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Pagamento</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for o in recent %}
+        <tr>
+          <td><a class="link" href="{{ url_for('vortex7.admin.order_detail', oid=o['id']) }}">{{ o['number'] }}</a><br><small style="color:var(--text-3)">{{ o['created_at']|dt }}</small></td>
+          <td>{{ o['customer_name'] }}</td>
+          <td class="num">R$ {{ o['total']|brl }}</td>
+          <td><span class="adm-badge b-{{ o['payment_status'] }}">{{ PAYMENT_LABELS()[o['payment_status']] }}</span></td>
+          <td><span class="adm-badge b-{{ o['status'] }}">{{ STATUS_LABELS()[o['status']] }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody></table></div>
+      {% else %}<p class="adm-empty">Nenhum pedido ainda. Quando o primeiro chegar, ele aparece aqui.</p>{% endif %}
+    </div>
+    <div class="adm-card">
+      <h2>Faturamento — últimos 7 dias</h2>
+      <div class="adm-chart">
+        {% for d in chart %}<div title="R$ {{ d.value|brl }}"><i style="height:{{ d.pct }}%"></i><span>{{ d.label }}</span></div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="adm-card">
+      <h2>Estoque baixo (≤ {{ low }})</h2>
+      {% if low_stock %}
+      <table class="adm-table"><tbody>
+        {% for p in low_stock %}
+        <tr><td><a class="link" href="{{ url_for('vortex7.admin.product_edit', pid=p['id']) }}">{{ p['name'] }}</a></td>
+            <td class="num"><span class="adm-badge {% if p['stock'] == 0 %}b-cancelado{% else %}b-pendente{% endif %}">{{ p['stock'] }} un.</span></td></tr>
+        {% endfor %}
+      </tbody></table>
+      {% else %}<p class="adm-empty">Tudo com estoque saudável.</p>{% endif %}
+    </div>
+    <div class="adm-card">
+      <h2>Resumo geral</h2>
+      <dl class="adm-kv">
+        <dt>Faturamento total</dt><dd>R$ {{ stats.revenue_total|brl }}</dd>
+        <dt>Pedidos pagos</dt><dd>{{ stats.paid_count }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}
