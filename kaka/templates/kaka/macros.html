@@ -22,7 +22,7 @@
 {%- endmacro %}
 
 {% macro service_grid(items) -%}
-<div class="service-grid">{% for service in items %}<article class="service-card carbon"><span class="service-number">{{service.number}}</span>{{ icon('droplet' if 'lavagem' in service.slug else ('shield' if 'protecao' in service.slug or 'vitrificacao' in service.slug else 'spark')) }}<p class="card-eyebrow">{{service.eyebrow}}</p><h2>{{service.name}}</h2><p>{{service.summary}}</p><a class="arrow-link" href="{{url_for('kaka.service_detail',slug=service.slug)}}">Ver serviço {{ icon('arrow') }}</a></article>{% endfor %}</div>
+<div class="service-grid">{% for service in items %}<article class="service-card carbon"><span class="service-number">{{service.number}}</span>{{ icon('droplet' if 'lavagem' in service.slug else ('shield' if 'protecao' in service.slug or 'vitrificacao' in service.slug else 'spark')) }}<p class="card-eyebrow">{{service.eyebrow}}</p><h2>{{service.name}}</h2><p>{{service.summary}}</p><p class="service-price">{{service.price_label}}</p><small>Faixa estimada • valor final após avaliação</small><a class="arrow-link" href="{{url_for('kaka.service_detail',slug=service.slug)}}">Ver serviço {{ icon('arrow') }}</a></article>{% endfor %}</div>
 {%- endmacro %}
 
 {% macro final_cta(title='Seu veículo em outro nível.',copy='Conte o que precisa de atenção. A avaliação vem antes de qualquer indicação.') -%}
