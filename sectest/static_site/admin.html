@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Administrativo | SecTest</title>
-<meta name="description" content="Painel administrativo interno da SecTest (ambiente de demonstração).">
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta name="description" content="Painel administrativo interno da SecTest.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -30,6 +30,7 @@
         <li><a href="sobre.html" class="nav-link">Sobre</a></li>
         <li><a href="servicos.html" class="nav-link">Serviços</a></li>
         <li><a href="cadastro.html" class="nav-link">Cadastro</a></li>
+        <li><a href="login" class="nav-link">Entrar</a></li>
         <li><a href="contato.html" class="nav-link">Contato</a></li>
       </ul>
     </nav>
@@ -60,8 +61,8 @@
 
       <form id="adminLoginForm">
         <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="adminUser">Usuário</label>
-          <input class="form-input" type="text" id="adminUser" name="adminUser" required autocomplete="username">
+          <label class="form-label" for="adminUser">E-mail</label>
+          <input class="form-input" type="email" id="adminUser" name="adminUser" required autocomplete="username">
         </div>
         <div class="form-group" style="text-align: left;">
           <label class="form-label" for="adminPass">Senha</label>
@@ -72,7 +73,7 @@
       </form>
 
       <div class="login-demo-note">
-        Ambiente de demonstração acadêmica — este projeto não possui back-end. Utilize usuário <code>admin</code> e senha <code>admin123</code>.
+        Use seu e-mail e sua senha de administrador. Solicite acesso ao responsável pelo site.
       </div>
     </div>
   </section>
@@ -83,7 +84,7 @@
       <div class="dashboard-header">
         <div>
           <h1>Bem-vindo(a) de volta</h1>
-          <p>Cadastros recebidos pelo site — dados fictícios para demonstração.</p>
+          <p>Cadastros e mensagens recebidos pelo site.</p>
         </div>
         <button class="btn btn-outline" id="logoutBtn">Sair</button>
       </div>
@@ -99,11 +100,11 @@
         </div>
         <div class="panel stat-card">
           <div class="stat-number" id="statMessages">0</div>
-          <div class="stat-label">Mensagens em aberto</div>
+          <div class="stat-label">Mensagens recebidas</div>
         </div>
         <div class="panel stat-card">
           <div class="stat-number" id="statActive">0</div>
-          <div class="stat-label">Empresas ativas</div>
+          <div class="stat-label">Empresas cadastradas</div>
         </div>
       </div>
 
@@ -129,7 +130,7 @@
         </table>
       </div>
 
-      <p class="admin-note">Observação: por se tratar de um projeto apenas de front-end (sem banco de dados), os registros acima são fictícios e usados somente para demonstrar a interface do painel.</p>
+      <h2>Mensagens recebidas</h2><div class="panel table-wrap"><table class="data-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Assunto e mensagem</th><th>Data</th></tr></thead><tbody id="messagesTableBody"></tbody></table></div><p class="admin-note">Os registros acima vêm diretamente do banco de dados: toda vez que alguém envia o formulário em <code>cadastro.html</code>, a linha aparece aqui.</p>
     </div>
   </section>
 
@@ -154,6 +155,7 @@
         <li><a href="index.html">Início</a></li>
         <li><a href="sobre.html">Sobre</a></li>
         <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="login" class="nav-link">Entrar</a></li>
         <li><a href="contato.html">Contato</a></li>
       </ul>
     </div>
@@ -175,10 +177,10 @@
   </div>
   <div class="container footer-bottom">
     <p>&copy; <span id="year"></span> SecTest. Projeto fictício desenvolvido para fins acadêmicos.</p>
-    <a href="admin.html" class="footer-admin-link">Acesso administrativo</a>
+    <a href="admin" class="footer-admin-link">Acesso administrativo</a>
   </div>
 </footer>
 
-<script src="js/script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,17 @@
+{
+  "registrations": [
+    {
+      "id": 1,
+      "empresa": "kakaka",
+      "cnpj": "1234567",
+      "funcionarios": "51-200",
+      "responsavel": "João pedro Dias dos Santos",
+      "email": "kakak@gmail.com",
+      "telefone": "(16) 89816-8155",
+      "servicos": "[\"Consultoria\",\"LGPD\",\"Monitoramento\",\"Incidentes\",\"Auditoria\",\"Treinamento\"]",
+      "mensagem": null,
+      "created_at": "2026-09-24 12:59:56"
+    }
+  ],
+  "messages": []
+}
