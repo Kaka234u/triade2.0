@@ -488,3 +488,9 @@ svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: 
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+.service-price{font-size:22px!important;font-weight:700;color:#ff646b!important;margin:16px 0 5px!important}
+.service-card{display:flex;flex-direction:column;align-items:flex-start;min-height:460px}
+.service-card .service-price{min-height:0!important;line-height:1.35!important}
+.service-card>small{display:block;position:relative;z-index:1;color:#aaa;font-size:12px;margin:4px 0 24px}
+.service-card .arrow-link{position:relative;bottom:auto;margin-top:auto;display:inline-flex;width:auto;align-self:flex-start}

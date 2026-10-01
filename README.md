@@ -1,81 +1,122 @@
-# TRÍADE — portal + marcas
+# Tríade — FK Káka Autodetail, SecTest e Vortex7
 
-Landing page institucional (hub) + as três marcas, todas rodando no mesmo
-processo Flask, cada uma como um **Blueprint** isolado (rotas, templates e
-arquivos estáticos próprios, sem misturar nada entre elas):
+## O que foi atualizado
 
-```
-triade/
-├── app.py                      # app principal: landing page em "/" + registra os 3 Blueprints
-├── requirements.txt
-├── Procfile
-├── templates/
-│   └── portal/
-│       └── index.html          # landing page (hub das 3 empresas)
-├── vortex7/                     # VORTEX 7 FUTSAL — loja completa (Flask + SQLite)
-│   ├── routes.py                 # Blueprint "vortex7", montado em /vortex7
-│   ├── database.db
-│   ├── templates/vortex7/         # templates namespaced
-│   └── static/
-├── kaka/                         # FK | KAKA DETAIL — site + orçamento/agendamento (Flask + SQLite)
-│   ├── routes.py                  # Blueprint "kaka", montado em /kaka
-│   ├── data.py                    # dados da empresa e dos serviços
-│   ├── templates/kaka/             # templates namespaced
-│   └── static/
-└── sectest/                     # SECTEST — site institucional 100% estático
-    ├── routes.py                  # Blueprint "sectest", montado em /sectest
-    └── static_site/                # arquivos originais do site, sem alterações
+- Login e criação de contas de clientes no FK e no SecTest. As contas e sessões de cada marca são independentes.
+- Painel FK protegido em `/kaka/admin`, sem link no menu, rodapé ou catálogo público do FK.
+- Sete serviços com faixas de preço ilustrativas, editáveis no painel.
+- Administração dos serviços, preços, visibilidade, contatos, imagens, textos, links externos, títulos das páginas, descrição de busca, orçamentos e agendamentos.
+- Nova versão do SecTest integrada à Tríade: cadastro empresarial, contato, estatísticas, pesquisa, detalhes dos cadastros e mensagens reais.
+- Vortex7 mantém a loja e a autenticação existentes. O portal continua reunindo as três marcas.
+
+## Iniciar no Windows
+
+Requer Python 3.10 ou superior. Abra o terminal na pasta extraída:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py
 ```
 
-## Como rodar localmente
+Acesse `http://localhost:5000`.
 
-```bash
-cd triade
-python3 -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
+## Criar os administradores
+
+Interrompa o servidor com Ctrl+C ou abra outro terminal na mesma pasta:
+
+```powershell
+.\.venv\Scripts\python.exe -m flask --app app criar-admin --marca kaka --email seu-email@exemplo.com
+.\.venv\Scripts\python.exe -m flask --app app criar-admin --marca sectest --email seu-email@exemplo.com
 ```
 
-Acesse:
-- Portal: http://localhost:5000/
-- Vortex 7: http://localhost:5000/vortex7/
-- Kaka Detail: http://localhost:5000/kaka/
-- SecTest: http://localhost:5000/sectest/
+Cada comando pede uma senha com pelo menos 10 caracteres e sua confirmação. A senha não aparece ao digitar. Não há senha padrão para os novos painéis. Execute novamente para trocar a senha de um administrador; as sessões administrativas anteriores dessa conta serão invalidadas.
 
-## Como funciona a integração
+Criar uma conta pelo site gera apenas um cliente. Uma conta comum nunca recebe acesso administrativo automaticamente. O Vortex7 continua usando seu próprio administrador e seu procedimento original.
 
-Cada marca é um **Blueprint Flask** isolado dentro do mesmo processo
-Python, com suas próprias rotas, templates e arquivos estáticos, montado
-em um prefixo de URL:
+## Endereços
 
-| Marca              | Prefixo      | Status                                  |
-|---------------------|--------------|-------------------------------------------|
-| Portal (landing)     | `/`          | pronto                                  |
-| VORTEX 7 FUTSAL      | `/vortex7/`  | pronto (loja completa, Flask + SQLite)  |
-| FK \| KAKA DETAIL    | `/kaka/`     | pronto (site + orçamento/agendamento, Flask + SQLite) |
-| SECTEST              | `/sectest/`  | pronto (site institucional estático)    |
+| Área | Caminho na Tríade |
+| --- | --- |
+| FK público | `/kaka/` |
+| Login de clientes FK | `/kaka/login` |
+| Cadastro de clientes FK | `/kaka/criar-conta` |
+| Painel FK | `/kaka/admin` |
+| SecTest público | `/sectest/` |
+| Login de clientes SecTest | `/sectest/login` |
+| Cadastro de contas SecTest | `/sectest/criar-conta` |
+| Cadastro empresarial / diagnóstico SecTest | `/sectest/cadastro.html` |
+| Painel SecTest | `/sectest/admin` |
+| Vortex7 | `/vortex7/` |
 
-Não há mistura de estilos, rotas ou templates entre marcas — cada uma
-mantém sua identidade visual e seu próprio banco de dados. O único ponto
-compartilhado é o processo Python que serve todas elas.
+Os sites públicos continuam acessíveis sem login. Os formulários públicos continuam aceitando solicitações. O login de cliente abre a área da conta; não representa confirmação automática de um agendamento.
 
-Os bancos de dados (`vortex7/database.db` e `kaka/database.db`) são
-criados/atualizados automaticamente no início do `app.py`, chamando o
-`init_db()` de cada Blueprint dentro do `app_context()` da aplicação.
+## Usar o painel FK
 
-## Testado
+1. **Serviços e preços:** edite cada serviço, suas etapas, benefícios, cuidados, perguntas frequentes e valores mínimo/máximo. Para retirar um serviço do catálogo, desmarque “Visível no site”. Também é possível adicionar novos serviços.
+2. **Dados da empresa:** contatos, WhatsApp, endereço, horários, Instagram e imagens de fundo. O WhatsApp usa país e DDD, somente números.
+3. **Imagens:** envie PNG, JPEG ou WebP. Copie o endereço apresentado e utilize-o na edição da página ou dos fundos. Os arquivos são convertidos para WebP.
+4. **Editar páginas:** abra a página desejada. Clique no texto, imagem ou link externo; use “Todos os campos” para alcançar campos ocultos, título da aba e descrição de busca. “Aplicar à prévia” ainda não publica: confirme com **Salvar alterações**.
+5. Textos e imagens do cabeçalho e rodapé são compartilhados entre as páginas. “Restaurar página” remove apenas as edições locais daquela página, preservando as compartilhadas. Para corrigir um campo compartilhado, edite-o novamente.
+6. **Atendimentos:** consulte orçamentos/agendamentos e atualize a situação. A confirmação por telefone ou WhatsApp continua sendo manual.
 
-- Todas as páginas das 3 marcas (200 OK), incluindo os detalhes de
-  produto/serviço e as páginas de política.
-- Fluxo de compra da Vortex 7 (carrinho → frete → checkout).
-- APIs de orçamento e agendamento da Kaka Detail (`/kaka/api/quotes`,
-  `/kaka/api/bookings`).
-- `robots.txt` e `sitemap.xml` da Kaka Detail.
-- Todos os assets estáticos (CSS, JS, logos, favicons) de cada marca.
+Os preços e textos dos serviços devem ser mantidos em **Serviços e preços**; dados de contato devem ser mantidos em **Dados da empresa**. Use o editor visual para o conteúdo editorial restante. Ele salva texto puro e endereços de imagens/links, não executa código HTML, JavaScript ou templates enviados pelo administrador. A estrutura e o layout do site continuam nos arquivos do projeto.
 
-## Deploy
+Faixas iniciais (exemplos, não pesquisa de mercado):
 
-O `Procfile` já está configurado para plataformas estilo Render/Heroku
-(`gunicorn app:app`). Antes de ir para produção, troque o `SECRET_KEY`
-(hoje com um valor de desenvolvimento) por uma variável de ambiente real.
+| Serviço | Faixa |
+| --- | --- |
+| Lavagem detalhada | R$ 85 – R$ 250 |
+| Polimento técnico | R$ 350 – R$ 1.200 |
+| Proteção de pintura | R$ 150 – R$ 600 |
+| Higienização interna | R$ 250 – R$ 700 |
+| Vitrificação | R$ 1.000 – R$ 3.000 |
+| Revitalização de plásticos | R$ 120 – R$ 350 |
+| Detalhamento de rodas | R$ 120 – R$ 300 |
+
+## FK em domínio próprio com `/admin`
+
+A aplicação também permite servir apenas o FK na raiz do domínio:
+
+```powershell
+$env:SITE_MODE = 'kaka'
+.\.venv\Scripts\python.exe app.py
+```
+
+Neste modo o site abre em `/`, o login em `/login` e o painel em `/admin`. Não é necessário incluir `/kaka` no endereço. Para voltar ao portal completo, use `$env:SITE_MODE = 'triade'`.
+
+O pacote não configura DNS nem publica um domínio. Ao hospedar o FK separadamente, use uma instalação/serviço próprio com `SITE_MODE=kaka`. Para o portal completo, mantenha `SITE_MODE=triade`.
+
+## Nova versão do SecTest e preservação de dados
+
+O frontend vem do segundo ZIP. Sua API Node foi adaptada para Flask/SQLite para funcionar no mesmo processo da Tríade, usando `/sectest/api/...`; não é necessário executar Node ou configurar CORS entre servidores.
+
+O cadastro existente no banco do ZIP foi preservado em `sectest/importacao_inicial.json`. Na primeira inicialização, ele é importado uma única vez para o banco do SecTest. O arquivo não é servido pela aplicação. Senhas administrativas e o arquivo `.env` do projeto Node não foram importados: crie o novo administrador pelo comando acima.
+
+A autenticação administrativa do SecTest agora usa sessão validada no servidor e cookie HttpOnly. Não há token administrativo em localStorage/sessionStorage. Os cadastros e mensagens são persistentes, e não dados simulados.
+
+## Dados, instalação e hospedagem
+
+Arquivos gerados em execução:
+
+- `accounts.db`: contas e sessões do FK/SecTest.
+- `kaka/database.db`: conteúdo, serviços e atendimentos do FK.
+- `sectest/database.db`: cadastros e mensagens do SecTest.
+- `vortex7/database.db`: dados originais da loja.
+- `kaka/static/uploads/`: imagens enviadas pelo administrador.
+- `.session-secret`: chave aleatória local, criada caso `SECRET_KEY` não esteja definida.
+
+Faça backup desses bancos, das imagens e da chave de sessão antes de atualizar uma instalação. O ZIP não contém bancos de testes, contas de teste ou senhas de acesso. Ao atualizar um site já existente, preserve seus bancos e uploads.
+
+Em hospedagem, use armazenamento persistente para os bancos e uploads. Os caminhos dos bancos podem ser definidos com `TRIADE_AUTH_DB`, `KAKA_DB`, `SECTEST_DB` e `VORTEX7_DB`. Defina uma `SECRET_KEY` forte e estável; com HTTPS, defina `COOKIE_SECURE=1`. A aplicação lê variáveis do ambiente (não carrega automaticamente um arquivo `.env`).
+
+Linux/macOS: crie/ative o ambiente virtual e use `python -m pip install -r requirements.txt`. Para hospedagem Linux, o `Procfile` existente inicia o Gunicorn. O servidor iniciado por `python app.py` é para desenvolvimento local; debug vem desativado.
+
+## Verificação
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest tests -q
+```
+
+Os testes cobrem páginas e arquivos locais, preços, cadastro/login/logout, isolamento entre marcas, restrição administrativa, CSRF, limitação de tentativas, conteúdo seguro, gravação/restauração de edições, configurações, formulários, imagens, preservação dos registros do SecTest e o FK instalado na raiz.

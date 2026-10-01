@@ -8,10 +8,10 @@ from pathlib import Path
 
 from flask import Blueprint, g, jsonify, render_template, request, Response, url_for
 
-from .data import business, services, whatsapp_url
+from .content import get_business, get_services, whatsapp_url, init_content
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "database.db"
+DB_PATH = Path(os.environ.get("KAKA_DB", BASE_DIR / "database.db"))
 
 app = Blueprint(
     "kaka", __name__, template_folder="templates", static_folder="static", static_url_path="/static"
@@ -34,6 +34,7 @@ def close_db(exception=None):
 
 
 def init_db():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS quote_requests (
@@ -52,6 +53,7 @@ def init_db():
         );
         CREATE INDEX IF NOT EXISTS booking_created_idx ON booking_requests (created_at DESC);
     """)
+    init_content(conn)
     conn.commit(); conn.close()
 
 
@@ -60,12 +62,12 @@ def clean_text(value, limit=160):
 
 
 def service_by_slug(slug):
-    return next((s for s in services if s["slug"] == slug), None)
+    return next((s for s in get_services() if s["slug"] == slug), None)
 
 
 @app.context_processor
 def globals_for_templates():
-    return {"business": business, "services": services, "whatsapp_url": whatsapp_url}
+    return {"business": get_business(), "services": get_services(), "whatsapp_url": whatsapp_url}
 
 
 @app.route("/")
@@ -106,7 +108,7 @@ def faq():
     groups = [
       ("Serviços", [("Como sei qual serviço escolher?", "Conte o que você percebeu no veículo e qual resultado procura. A equipe indica o cuidado mais adequado."), ("Polimento remove todo risco?", "O resultado depende da profundidade de cada marca e da condição do verniz. A avaliação mostra o que pode ser corrigido com segurança."), ("Vitrificação impede riscos?", "Não. Ela ajuda na proteção e facilita a manutenção, mas não deixa a pintura imune a riscos ou impactos.")]),
       ("Agendamento", [("O pedido no site já reserva um horário?", "Ainda não. A data e o período escolhidos são confirmados pela equipe pelo WhatsApp."), ("Qual é o horário de atendimento?", "De segunda a sexta, das 16h40 às 22h30. Aos sábados e domingos, das 7h30 às 21h."), ("Quanto tempo cada serviço leva?", "Depende do veículo e do trabalho escolhido. O prazo é informado no orçamento."), ("Posso reagendar?", "Sim. Avise pelo WhatsApp com pelo menos 24 horas de antecedência para transferir o sinal uma vez para outra data disponível.")]),
-      ("Valores e sinal", [("Quanto custa?", "A lavagem para carros populares parte de R$ 85. Serviços de alto padrão podem variar de R$ 1.000 a R$ 3.000, conforme o carro ou a moto e o escopo do trabalho."), ("Quando é cobrado sinal?", "Serviços acima de R$ 500 pedem sinal de 20% depois da aprovação do orçamento. O valor é descontado do total."), ("O sinal é devolvido?", "Sim, em cancelamentos feitos com pelo menos 24 horas de antecedência. Depois desse prazo ou em caso de ausência, o sinal não é devolvido.")]),
+      ("Valores e sinal", [("Quanto custa?", "Todos os serviços têm uma faixa de referência no catálogo. Consulte a página do serviço; o valor final é confirmado após a avaliação do veículo."), ("Quando é cobrado sinal?", "Serviços acima de R$ 500 pedem sinal de 20% depois da aprovação do orçamento. O valor é descontado do total."), ("O sinal é devolvido?", "Sim, em cancelamentos feitos com pelo menos 24 horas de antecedência. Depois desse prazo ou em caso de ausência, o sinal não é devolvido.")]),
       ("Atendimento", [("Onde fica a FK Káka Detail?", "Rua Marechal Napion, 775 A, Barra do Ceará, Fortaleza — CE, CEP 60332-690."), ("Como acompanho minha solicitação?", "Use o identificador recebido e continue a conversa pelo WhatsApp."), ("Qual é o e-mail?", "kássyo.albuquerque2527@gmail.com.")]),
     ]
     return render_template("kaka/faq.html", title="Perguntas frequentes", groups=groups)
@@ -198,6 +200,9 @@ def robots():
 @app.route("/sitemap.xml")
 def sitemap():
     urls = [url_for('kaka.home', _external=True),url_for('kaka.services_page',_external=True),url_for('kaka.gallery',_external=True),url_for('kaka.about',_external=True),url_for('kaka.contact',_external=True),url_for('kaka.faq',_external=True),url_for('kaka.quote',_external=True),url_for('kaka.booking',_external=True)]
-    urls += [url_for('kaka.service_detail',slug=s['slug'],_external=True) for s in services]
+    urls += [url_for('kaka.service_detail',slug=s['slug'],_external=True) for s in get_services()]
     xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + ''.join(f'<url><loc>{u}</loc></url>' for u in urls) + '</urlset>'
     return Response(xml,mimetype='application/xml')
+
+
+from . import admin  # registra as rotas antes do blueprint ser montado

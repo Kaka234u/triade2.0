@@ -1,58 +1,50 @@
-"""
-TRÍADE — app principal do portal.
-
-Serve a landing page institucional em "/" e monta cada marca como um
-Blueprint Flask independente em seu próprio prefixo de URL:
-
-    /            -> landing page (portal)
-    /vortex7/... -> VORTEX 7 FUTSAL (loja, Flask + SQLite)
-    /kaka/...    -> FK | KAKA DETAIL (Flask + SQLite)
-    /sectest/... -> SECTEST (site institucional estático)
-
-Cada marca mantém seus próprios templates, estáticos e (quando aplicável)
-banco de dados, isolados em sua própria pasta — não há mistura de estilos
-ou rotas entre as marcas, apenas o mesmo processo Python servindo todas.
-"""
-
+"""Tríade: Vortex7, FK Káka Autodetail e SecTest no mesmo servidor."""
 import os
-
+import secrets
+from datetime import timedelta
+from pathlib import Path
 from flask import Flask, render_template
+from accounts import init_accounts, register_accounts
+from vortex7.routes import app as vortex7_bp, init_db as vortex7_init_db
+from kaka.routes import app as kaka_bp, init_db as kaka_init_db
+from sectest.routes import app as sectest_bp, init_db as sectest_init_db
 
-from vortex7.routes import app as vortex7_bp
-from vortex7.routes import init_db as vortex7_init_db
-from kaka.routes import app as kaka_bp
-from kaka.routes import init_db as kaka_init_db
-from sectest.routes import app as sectest_bp
+app = Flask(__name__, static_url_path='/shared-static')
+secret_file = Path(__file__).with_name('.session-secret')
+secret = os.environ.get('SECRET_KEY')
+if not secret:
+    try:
+        with secret_file.open('x', encoding='utf-8') as stream:
+            stream.write(secrets.token_hex(32))
+    except FileExistsError:
+        pass
+    secret = secret_file.read_text(encoding='utf-8').strip()
+app.secret_key = secret
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
+                  SESSION_COOKIE_SECURE=os.environ.get('COOKIE_SECURE') == '1',
+                  PERMANENT_SESSION_LIFETIME=timedelta(hours=2), MAX_CONTENT_LENGTH=8*1024*1024)
+mode = os.environ.get('SITE_MODE', 'triade')
+if mode not in {'triade', 'kaka'}:
+    raise RuntimeError('SITE_MODE deve ser triade ou kaka')
+kaka_prefix = '' if mode == 'kaka' else '/kaka'
+app.register_blueprint(kaka_bp, url_prefix=kaka_prefix)
+register_accounts(app, 'kaka', kaka_prefix)
+if mode == 'triade':
+    app.register_blueprint(vortex7_bp, url_prefix='/vortex7')
+    app.register_blueprint(sectest_bp, url_prefix='/sectest')
+    register_accounts(app, 'sectest', '/sectest')
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "triade-dev-secret-key-change-in-production")
+    @app.route('/')
+    def portal_home():
+        return render_template('portal/index.html')
 
-# ---------------------------------------------------------------------------
-# Registro das marcas (Blueprints)
-# ---------------------------------------------------------------------------
-app.register_blueprint(vortex7_bp, url_prefix="/vortex7")
-app.register_blueprint(kaka_bp, url_prefix="/kaka")
-app.register_blueprint(sectest_bp, url_prefix="/sectest")
-
-
-# ---------------------------------------------------------------------------
-# Landing page do portal
-# ---------------------------------------------------------------------------
-@app.route("/")
-def portal_home():
-    return render_template("portal/index.html")
-
-
-# ---------------------------------------------------------------------------
-# Inicialização dos bancos de dados de cada marca
-# ---------------------------------------------------------------------------
 with app.app_context():
-    vortex7_init_db()
+    init_accounts(app)
     kaka_init_db()
-    # SECTEST não usa banco de dados (site 100% estático)
+    if mode == 'triade':
+        vortex7_init_db()
+        sectest_init_db()
 
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
-    app.run(host="0.0.0.0", port=port, debug=debug)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)),
+            debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')
