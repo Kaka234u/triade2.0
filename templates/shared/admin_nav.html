@@ -1,0 +1,5 @@
+<aside class="sidebar"><a class="wordmark" href="{{url_for(brand ~ '.admin_dashboard')}}">{{brand_name}}</a><p>Administração</p>
+<nav aria-label="Navegação administrativa" class="grouped-nav">
+{% for group in admin_menu(brand) %}<details class="nav-group" {% if group.open %}open{% endif %}><summary>{{group.label}}<span aria-hidden="true" class="nav-arrow">›</span></summary><div>{% for item in group["items"] %}<a href="{{item.url}}" {% if item.active %}class="active" aria-current="page"{% endif %}>{{item.label}}</a>{% endfor %}</div></details>{% endfor %}
+</nav><a href="{{url_for(brand ~ ('.home' if brand=='kaka' else '.index'))}}">Abrir site</a>
+<form method="post" action="{{url_for(brand ~ '_accounts.admin_logout')}}"><input type="hidden" name="csrf_token" value="{{brand_csrf()}}"><button class="secondary">Sair do painel</button></form></aside>

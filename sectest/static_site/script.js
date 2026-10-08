@@ -243,6 +243,8 @@ function initCadastroForm() {
         throw new Error(data.error || 'Não foi possível enviar o cadastro.');
       }
 
+      const data = await response.json();
+      if (data.redirect_url) { window.location.assign(data.redirect_url); return; }
       const successPanel = document.getElementById('cadastroSuccess');
       form.classList.add('hidden');
       successPanel?.classList.remove('hidden');

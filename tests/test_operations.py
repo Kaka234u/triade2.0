@@ -132,8 +132,9 @@ def test_webhook_signature_and_authoritative_fetch(client,monkeypatch):
     monkeypatch.setenv('FK_MP_WEBHOOK_SECRET','test-secret')
     monkeypatch.setattr(cp.payments,'mp_get_payment',lambda ident,token:dict(id=123,external_reference='signed',transaction_amount=120,currency_id='BRL',status='approved'))
     path='/kaka/webhook/pagamentos?data.id=123'
-    assert client.post(path,json={'data':{'id':'123'}}).status_code==401
+    anonymous=app.test_client()
+    assert anonymous.post(path,json={'data':{'id':'123'}}).status_code==401
     signature=hmac.new(b'test-secret',b'id:123;request-id:request123;ts:123456;',hashlib.sha256).hexdigest()
     headers={'x-signature':'ts=123456,v1='+signature,'x-request-id':'request123'}
-    assert client.post(path,headers=headers,json={'data':{'id':'123'}}).status_code==200
+    assert anonymous.post(path,headers=headers,json={'data':{'id':'123'}}).status_code==200
     with app.app_context():assert kaka.get_db().execute('SELECT sum(amount) FROM receipts WHERE reversed=0').fetchone()[0]==12000

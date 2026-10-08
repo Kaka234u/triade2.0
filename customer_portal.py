@@ -115,13 +115,19 @@ def register_portal(app, brand, prefix, get_db):
                 abort(400)
             if error:
                 conn.rollback()
+                if request.accept_mimetypes.best == 'application/json':
+                    return jsonify(error=error),400
             else:
                 conn.commit()
+                if request.accept_mimetypes.best == 'application/json':
+                    return jsonify(ok=True)
                 return redirect(url_for(brand+'_portal.'+('admin_detail' if admin else 'detail'),ident=ident))
         messages = conn.execute('SELECT * FROM client_messages WHERE request_id=? ORDER BY id', (ident,)).fetchall()
         from accounts import db as account_db
         owner=account_db().execute('SELECT name,email FROM accounts WHERE id=? AND brand=?',(row['owner_id'],brand)).fetchone()
-        return render('detail.html', row=row, messages=messages, owner=owner, admin=admin, title=row['service'], error=error), 400 if error else 200
+        from finance import invoice_rows
+        invoices=[i for i in invoice_rows(conn) if i['request_id']==ident]
+        return render('detail.html', invoices=invoices, row=row, messages=messages, owner=owner, admin=admin, title=row['service'], error=error), 400 if error else 200
 
     @bp.route('/meus-pedidos/<int:ident>',methods=['GET','POST'])
     @customer_required
@@ -135,12 +141,16 @@ def register_portal(app, brand, prefix, get_db):
 
     @bp.get('/conversas/<int:ident>/mensagens')
     def messages(ident):
-        user=current_user(brand)
-        admin=current_user(brand,True)
-        if not user and not admin:abort(401)
+        admin=request.args.get('role')=='admin'
+        user=current_user(brand,admin)
+        if not user:abort(401)
         row=get_db().execute('SELECT owner_id FROM client_requests WHERE id=?',(ident,)).fetchone()
         if not row or (not admin and row['owner_id']!=user['id']):abort(404)
-        messages=get_db().execute('SELECT id,administrator,body,created_at FROM client_messages WHERE request_id=? ORDER BY id',(ident,)).fetchall()
+        try:
+            after=int(request.args.get('after',0))
+            if after<0:raise ValueError()
+        except ValueError:abort(400)
+        messages=get_db().execute('SELECT id,administrator,body,created_at FROM client_messages WHERE request_id=? AND id>? ORDER BY id LIMIT 200',(ident,after)).fetchall()
         return jsonify(messages=[dict(m) for m in messages])
 
     app.register_blueprint(bp,url_prefix=prefix)

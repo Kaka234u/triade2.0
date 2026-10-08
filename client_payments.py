@@ -1,5 +1,6 @@
 """Reusa o recebedor Vortex7 sem compartilhar acesso administrativo."""
 import os
+from pathlib import Path
 import secrets
 import sqlite3
 import hashlib
@@ -14,7 +15,7 @@ from vortex7 import payments
 def settings():
     from vortex7.common import DB_PATH, load_settings
     # Conexão própria: nunca mistura o banco Vortex com o banco da empresa.
-    if not DB_PATH.exists():return {}
+    if not Path(DB_PATH).exists():return {}
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory=sqlite3.Row
         return load_settings(conn)

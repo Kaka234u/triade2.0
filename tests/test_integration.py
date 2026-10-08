@@ -39,7 +39,9 @@ def client(tmp_path,monkeypatch):
         from client_payments import init_payments
         from sectest_plans import init_plans
         for conn in (kaka.get_db(),sectest.get_db()):
-            init_portal(conn);init_finance(conn);init_payments(conn);conn.commit()
+            init_portal(conn);init_finance(conn);init_payments(conn)
+            from notifications import init_notifications
+            init_notifications(conn);conn.commit()
         init_plans(sectest.get_db());sectest.get_db().commit()
         sectest.get_db().execute('DELETE FROM registrations')
         sectest.get_db().execute('DELETE FROM messages')
@@ -51,8 +53,11 @@ def client(tmp_path,monkeypatch):
     return app.test_client()
 
 def csrf(client,path='/kaka/login'):
-    soup=BeautifulSoup(client.get(path).data,'html.parser')
-    return soup.select_one('input[name=csrf_token]')['value']
+    response=client.get(path,follow_redirects=True)
+    with client.session_transaction() as session:
+        token=session.get('brand_csrf')
+    assert token, path
+    return token
 
 def login(client,brand='kaka',admin=True):
     path=f'/{brand}/admin/login' if admin else f'/{brand}/login'
@@ -71,6 +76,7 @@ def test_public_pages_assets_prices_and_hidden_admin(client):
             if target.hostname=='localhost': assert client.get(target.path).status_code==200,(path,target.path)
         if path.startswith('/kaka'):
             assert not soup.select('a[href*="/admin"]')
+    login(client,admin=False)
     soup=BeautifulSoup(client.get('/kaka/servicos').data,'html.parser')
     prices=soup.select('.service-price')
     assert len(prices)==7
@@ -174,18 +180,19 @@ def test_cli_admin_and_settings(client):
 def test_fk_requests_and_status_management(client):
     from datetime import date, timedelta
     quote={'name':'Cliente','phone':'85988887777','vehicleType':'Carro','brand':'Marca','model':'Modelo','service':'Lavagem detalhada','condition':'Uso diário','consent':True}
-    response=client.post('/kaka/api/quotes',json=quote)
+    login(client,admin=False)
+    headers={'X-CSRF-Token':csrf(client)}
+    response=client.post('/kaka/api/quotes',json=quote,headers=headers)
     assert response.status_code==200
     ident=response.json['id']
-    assert client.post('/kaka/api/quotes',json=quote).status_code==429
+    assert client.post('/kaka/api/quotes',json=quote,headers=headers).status_code==429
     booking={'name':'Cliente','phone':'85988887777','service':'Lavagem detalhada','vehicle':'Carro','preferredDate':(date.today()+timedelta(days=2)).isoformat(),'preferredPeriod':'Tarde'}
     login(client,admin=False)
     assert client.post('/kaka/api/bookings',json=booking,headers={'X-CSRF-Token':csrf(client)}).status_code==200
     login(client)
     token=csrf(client,'/kaka/admin/solicitacoes')
-    assert client.post('/kaka/admin/solicitacoes',data={'csrf_token':token,'kind':'quote','id':ident,'status':'confirmed'}).status_code==302
-    with app.app_context():
-        assert kaka.get_db().execute('SELECT status FROM quote_requests WHERE id=?',(ident,)).fetchone()[0]=='confirmed'
+    response=client.post('/kaka/admin/solicitacoes',data={'csrf_token':token,'kind':'quote','id':ident,'status':'confirmed'})
+    assert response.status_code==302 and '/admin/agendamentos/' in response.location
 
 def test_image_upload_validation(client,tmp_path,monkeypatch):
     import kaka.admin as admin
@@ -200,7 +207,10 @@ def test_image_upload_validation(client,tmp_path,monkeypatch):
     assert Image.open(uploaded[0]).format=='WEBP'
     assert client.post('/kaka/admin/imagens',data={'csrf_token':token,'image':(io.BytesIO(b'<script>bad</script>'),'image.png')},content_type='multipart/form-data').status_code==400
 
-def test_sectest_import_once(client):
+def test_sectest_import_once(client, tmp_path, monkeypatch):
+    seed={"registrations":[],"messages":[]}
+    (tmp_path/"importacao_inicial.json").write_text(json.dumps(seed))
+    monkeypatch.setattr(sectest,"BASE_DIR",tmp_path)
     with app.app_context():
         conn=sectest.get_db()
         conn.execute("DELETE FROM migrations WHERE name='node_import'");conn.commit()

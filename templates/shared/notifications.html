@@ -1,0 +1,5 @@
+<link rel="stylesheet" href="{{url_for('static',filename='notifications.css')}}">
+<div class="notification-widget" data-notifications-url="{{url_for(notification_brand ~ '_notifications.' ~ ('admin' if notification_admin else 'customer'))}}" data-read-url="{{url_for(notification_brand ~ '_notifications.' ~ ('admin_read' if notification_admin else 'customer_read'))}}" data-csrf="{{brand_csrf()}}">
+<button type="button" class="notification-toggle" aria-label="Notificações" aria-expanded="false" aria-controls="notification-panel"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span data-notification-count hidden>0</span></button>
+<section id="notification-panel" class="notification-panel" hidden aria-label="Notificações"><h2>Notificações</h2><button type="button" data-read-all>Marcar todas como lidas</button><p data-notification-status role="status">Carregando…</p><ul data-notification-items></ul></section></div>
+<script src="{{url_for('static',filename='notifications.js')}}" defer></script>

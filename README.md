@@ -1,3 +1,7 @@
+# Atualização de navegação, notificações e chat
+
+Consulte primeiro **ATUALIZACAO-RENDER.md** para atualizar uma instalação existente.
+
 # Tríade — FK Káka Autodetail, SecTest e Vortex7
 
 ## O que foi atualizado
@@ -91,7 +95,7 @@ O pacote não configura DNS nem publica um domínio. Ao hospedar o FK separadame
 
 O frontend vem do segundo ZIP. Sua API Node foi adaptada para Flask/SQLite para funcionar no mesmo processo da Tríade, usando `/sectest/api/...`; não é necessário executar Node ou configurar CORS entre servidores.
 
-O cadastro existente no banco do ZIP foi preservado em `sectest/importacao_inicial.json`. Na primeira inicialização, ele é importado uma única vez para o banco do SecTest. O arquivo não é servido pela aplicação. Senhas administrativas e o arquivo `.env` do projeto Node não foram importados: crie o novo administrador pelo comando acima.
+Esta distribuição não inclui cadastros reais nem o arquivo de importação com dados antigos. Os registros já existentes nos bancos são preservados. Se sua instalação ainda possui uma importação legada pendente, guarde uma cópia privada antes de atualizar; não publique o arquivo no GitHub. Não recrie administradores existentes.
 
 A autenticação administrativa do SecTest agora usa sessão validada no servidor e cookie HttpOnly. Não há token administrativo em localStorage/sessionStorage. Os cadastros e mensagens são persistentes, e não dados simulados.
 

@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin,urlsplit
 client=app.test_client()
 for path in ['/', '/servicos','/login','/criar-conta']:
-    response=client.get(path)
+    response=client.get(path,follow_redirects=True)
     assert response.status_code==200,path
     soup=BeautifulSoup(response.data,'html.parser')
     for node in soup.select('img[src],script[src],link[rel=stylesheet]'):

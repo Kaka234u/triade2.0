@@ -56,7 +56,16 @@ def index():
 @app.get('/admin')
 @require_admin('sectest')
 def admin_dashboard():
-    return send_from_directory(SITE_DIR, 'admin.html')
+    from flask import render_template
+    conn=get_db()
+    q=request.args.get('q','').strip().lower()
+    rows=[dict(r) for r in conn.execute('SELECT * FROM registrations ORDER BY id DESC')]
+    if q:rows=[r for r in rows if q in ' '.join(str(v or '') for v in r.values()).lower()]
+    return render_template('sectest/admin_dashboard.html',brand='sectest',brand_name='SecTest',admin=True,title='Visão geral',
+        rows=rows,messages=conn.execute('SELECT * FROM messages ORDER BY id DESC').fetchall(),
+        total=conn.execute('SELECT count(*) FROM registrations').fetchone()[0],
+        week=conn.execute("SELECT count(*) FROM registrations WHERE created_at>=datetime('now','-7 days')").fetchone()[0],
+        companies=conn.execute('SELECT count(DISTINCT empresa) FROM registrations').fetchone()[0])
 
 @app.get('/<path:filename>')
 def page(filename):
@@ -111,9 +120,9 @@ def registration():
     cur = conn.execute('''INSERT INTO registrations (empresa,cnpj,funcionarios,responsavel,email,telefone,servicos,mensagem)
       VALUES (?,?,?,?,?,?,?,?)''', (*[values[k] for k in ['empresa','cnpj','funcionarios','responsavel','email','telefone']],json.dumps(services,ensure_ascii=False),values['mensagem']))
     from customer_portal import add_request
-    add_request(conn,'sectest','CAD-'+str(cur.lastrowid),', '.join(services) or 'Diagnóstico',values['empresa']+'\n'+values['mensagem'])
+    portal_id=add_request(conn,'sectest','CAD-'+str(cur.lastrowid),', '.join(services) or 'Diagnóstico',values['empresa']+'\n'+values['mensagem'])
     conn.commit()
-    return jsonify(message='Cadastro recebido com sucesso.',id=cur.lastrowid), 201
+    return jsonify(message='Cadastro recebido com sucesso.',id=cur.lastrowid,redirect_url=url_for('sectest_portal.detail',ident=portal_id,enviado=1)), 201
 
 @app.post('/api/contato')
 def contact():

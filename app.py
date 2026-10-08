@@ -55,6 +55,12 @@ if mode=='triade':
     register_payments(app,'sectest','/sectest',sectest_connection)
     register_plans(app,sectest_connection)
 app.jinja_env.globals['finance_ready']=True
+from notifications import init_notifications, register_notifications
+from brand_ui import init_brand_ui
+register_notifications(app,'kaka',kaka_prefix,kaka_connection)
+if mode=='triade':
+    register_notifications(app,'sectest','/sectest',sectest_connection)
+init_brand_ui(app, ['kaka','sectest'] if mode=='triade' else ['kaka'])
 
 with app.app_context():
     init_accounts(app)
@@ -62,6 +68,7 @@ with app.app_context():
     init_portal(kaka_connection())
     init_finance(kaka_connection())
     init_payments(kaka_connection())
+    init_notifications(kaka_connection())
     kaka_connection().commit()
     if mode == 'triade':
         vortex7_init_db()
@@ -69,6 +76,7 @@ with app.app_context():
         init_portal(sectest_connection())
         init_finance(sectest_connection())
         init_payments(sectest_connection())
+        init_notifications(sectest_connection())
         init_plans(sectest_connection())
         sectest_connection().commit()
 

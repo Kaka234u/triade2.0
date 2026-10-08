@@ -60,7 +60,7 @@ def register_plans(app,get_db):
                     conn.execute('INSERT INTO plan_requests(request_id,plan_slug,price,period,answers) VALUES (?,?,?,?,?)',
                       (ident,selected['slug'],result or 0,selected['period'],json.dumps(answers)))
                     conn.execute('UPDATE client_requests SET total_cents=? WHERE id=?',(result or 0,ident));conn.commit()
-                    return redirect(url_for('sectest_portal.detail',ident=ident))
+                    return redirect(url_for('sectest_portal.detail',ident=ident,enviado=1))
             except (ValueError,TypeError) as exc:error=str(exc) or 'Revise os campos.'
         return render('diagnostic.html',title='Avaliação inicial',rows=rows,admin=False,error=error,result=result,selected=selected)
 

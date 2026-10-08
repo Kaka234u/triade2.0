@@ -97,6 +97,22 @@ def require_admin(brand):
         return wrapped
     return decorator
 
+def safe_next(brand, target):
+    """Retorno apenas a GETs da própria empresa, nunca admin/autenticação/URLs externas."""
+    from urllib.parse import urlsplit, unquote
+    if not target or any(ord(c)<32 for c in target) or '\\' in target:return None
+    decoded=unquote(target)
+    if decoded.startswith('//') or '\\' in decoded:return None
+    parsed=urlsplit(decoded)
+    if parsed.scheme or parsed.netloc or not parsed.path.startswith('/'):return None
+    try:
+        endpoint,_=current_app.url_map.bind_to_environ(request.environ).match(parsed.path,method='GET')
+    except Exception:return None
+    if not (endpoint.startswith(brand+'.') or endpoint.startswith(brand+'_')):return None
+    if '_accounts.' in endpoint or '/admin' in parsed.path or '/api/' in parsed.path:return None
+    return target
+
+
 def register_accounts(app, brand, prefix):
     bp = Blueprint(f'{brand}_accounts', __name__)
     @bp.after_request
@@ -112,11 +128,13 @@ def register_accounts(app, brand, prefix):
     def login():
         error = None
         status = 200
+        if current_user(brand):
+            return redirect(url_for(brand + ('.home' if brand=='kaka' else '.index')))
         if request.method == 'POST':
             verify_csrf()
             user, error, status = authenticate(brand, request.form.get('email'), request.form.get('password'))
             if user:
-                return redirect(url_for(f'{brand}_accounts.account'))
+                return redirect(safe_next(brand, request.args.get('next')) or url_for(f'{brand}_accounts.account'))
         return page('login', error=error), status
 
     @bp.route('/criar-conta', methods=['GET', 'POST'])

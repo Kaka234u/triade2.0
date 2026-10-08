@@ -97,7 +97,7 @@ def admin_pages():
 @app.route('/admin/solicitacoes',methods=['GET','POST'])
 @require_admin('kaka')
 def admin_requests():
-    if request.method=='POST' and request.form.get('kind')=='booking':
+    if request.method=='POST' and request.form.get('kind') in ('booking','quote'):
         linked=get_db().execute('SELECT id FROM client_requests WHERE source_id=?',(request.form.get('id'),)).fetchone()
         if linked:
             return redirect(url_for('kaka_portal.admin_detail',ident=linked['id']))
