@@ -49,7 +49,7 @@ Criar uma conta pelo site gera apenas um cliente. Uma conta comum nunca recebe a
 | Painel SecTest | `/sectest/admin` |
 | Vortex7 | `/vortex7/` |
 
-Os sites públicos continuam acessíveis sem login. Os formulários públicos continuam aceitando solicitações. O login de cliente abre a área da conta; não representa confirmação automática de um agendamento.
+Os sites públicos continuam acessíveis sem login. Agendamentos FK e solicitações SecTest exigem login para garantir o acompanhamento privado. Orçamentos FK podem ser enviados sem conta; os enviados com login aparecem no painel. O login não confirma automaticamente o horário.
 
 ## Usar o painel FK
 
@@ -58,7 +58,7 @@ Os sites públicos continuam acessíveis sem login. Os formulários públicos co
 3. **Imagens:** envie PNG, JPEG ou WebP. Copie o endereço apresentado e utilize-o na edição da página ou dos fundos. Os arquivos são convertidos para WebP.
 4. **Editar páginas:** abra a página desejada. Clique no texto, imagem ou link externo; use “Todos os campos” para alcançar campos ocultos, título da aba e descrição de busca. “Aplicar à prévia” ainda não publica: confirme com **Salvar alterações**.
 5. Textos e imagens do cabeçalho e rodapé são compartilhados entre as páginas. “Restaurar página” remove apenas as edições locais daquela página, preservando as compartilhadas. Para corrigir um campo compartilhado, edite-o novamente.
-6. **Atendimentos:** consulte orçamentos/agendamentos e atualize a situação. A confirmação por telefone ou WhatsApp continua sendo manual.
+6. **Agendamentos e conversas:** confirme os novos pedidos, combine a data, informe o valor e converse com o cliente. **Atendimentos** preserva os registros antigos. Veja ATUALIZACAO-FATURAMENTO.md para pagamentos, planos e exportações.
 
 Os preços e textos dos serviços devem ser mantidos em **Serviços e preços**; dados de contato devem ser mantidos em **Dados da empresa**. Use o editor visual para o conteúdo editorial restante. Ele salva texto puro e endereços de imagens/links, não executa código HTML, JavaScript ou templates enviados pelo administrador. A estrutura e o layout do site continuam nos arquivos do projeto.
 

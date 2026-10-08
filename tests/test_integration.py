@@ -34,6 +34,13 @@ def client(tmp_path,monkeypatch):
     with sqlite3.connect(BOOT/'auth.db') as source, sqlite3.connect(accounts.AUTH_DB) as target: source.backup(target)
     with app.app_context():
         kaka.init_db();sectest.init_db()
+        from customer_portal import init_portal
+        from finance import init_finance
+        from client_payments import init_payments
+        from sectest_plans import init_plans
+        for conn in (kaka.get_db(),sectest.get_db()):
+            init_portal(conn);init_finance(conn);init_payments(conn);conn.commit()
+        init_plans(sectest.get_db());sectest.get_db().commit()
         sectest.get_db().execute('DELETE FROM registrations')
         sectest.get_db().execute('DELETE FROM messages')
         sectest.get_db().commit()
@@ -55,7 +62,7 @@ def test_public_pages_assets_prices_and_hidden_admin(client):
     paths=['/','/vortex7/','/vortex7/login','/kaka/','/kaka/servicos','/kaka/galeria','/kaka/sobre','/kaka/contato','/kaka/faq','/kaka/orcamento','/kaka/agendamento',
       '/kaka/politicas/privacidade','/kaka/politicas/agendamento','/kaka/politicas/cancelamento','/sectest/','/sectest/sobre.html','/sectest/servicos.html','/sectest/cadastro.html','/sectest/contato.html','/sectest/login']
     for path in paths:
-        response=client.get(path)
+        response=client.get(path,follow_redirects=True)
         assert response.status_code==200,path
         soup=BeautifulSoup(response.data,'html.parser')
         for node in soup.select('img[src],script[src],link[rel=stylesheet],link[rel=icon]'):
@@ -78,7 +85,7 @@ def test_registration_login_logout_and_brand_isolation(client):
         data={'name':'Cliente','email':'client@example.test','password':'CustomerPass123','confirm_password':'CustomerPass123','csrf_token':token,'role':'admin'}
         assert client.post(path,data=data).status_code==302
         assert client.post(f'/{brand}/login',data={'email':data['email'],'password':data['password'],'csrf_token':token}).status_code==302
-        assert client.get(f'/{brand}/conta').status_code==200
+        assert client.get(f'/{brand}/conta',follow_redirects=True).status_code==200
         assert client.get(f'/{brand}/admin').status_code==302
         assert client.post(f'/{brand}/admin/login',data={'email':data['email'],'password':data['password'],'csrf_token':token}).status_code==401
         assert client.post(f'/{brand}/logout',data={'csrf_token':token}).status_code==302
@@ -135,6 +142,7 @@ def test_editor_escaped_content_shared_fields_and_restore(client):
     assert '&lt;script&gt;' not in client.get('/kaka/').get_data(as_text=True)
 
 def test_sectest_forms_admin_data_and_logout(client):
+    login(client,'sectest',admin=False)
     token=client.get('/sectest/api/csrf').json['token']; headers={'X-CSRF-Token':token}
     valid={'empresa':'Empresa <teste>','funcionarios':'1-10','responsavel':'Responsável','email':'contact@example.test','telefone':'85988888888','servicos':['Monitoramento'],'consentimento':True,'mensagem':'Preciso de diagnóstico.'}
     assert client.post('/sectest/api/cadastro',json=valid).status_code==400
@@ -171,7 +179,8 @@ def test_fk_requests_and_status_management(client):
     ident=response.json['id']
     assert client.post('/kaka/api/quotes',json=quote).status_code==429
     booking={'name':'Cliente','phone':'85988887777','service':'Lavagem detalhada','vehicle':'Carro','preferredDate':(date.today()+timedelta(days=2)).isoformat(),'preferredPeriod':'Tarde'}
-    assert client.post('/kaka/api/bookings',json=booking).status_code==200
+    login(client,admin=False)
+    assert client.post('/kaka/api/bookings',json=booking,headers={'X-CSRF-Token':csrf(client)}).status_code==200
     login(client)
     token=csrf(client,'/kaka/admin/solicitacoes')
     assert client.post('/kaka/admin/solicitacoes',data={'csrf_token':token,'kind':'quote','id':ident,'status':'confirmed'}).status_code==302

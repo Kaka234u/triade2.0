@@ -149,7 +149,7 @@ def register_accounts(app, brand, prefix):
         user = current_user(brand)
         if not user:
             return redirect(url_for(f'{brand}_accounts.login'))
-        return page('account', user=user)
+        return redirect(url_for(brand + '_portal.index'))
 
     @bp.post('/logout')
     def logout():

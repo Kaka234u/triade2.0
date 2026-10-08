@@ -44,6 +44,8 @@ def get_services(include_hidden=False):
         service=json.loads(row['data'])
         service.update(active=bool(row['active']),position=row['position'])
         service['price_label']=f"{brl(service['price_min'])} – {brl(service['price_max'])}"
+        from flask import url_for
+        service['image_url']=service.get('image_url') or url_for('kaka.static',filename='images/'+('hero-s1000-carbon.webp' if 'moto' in service['slug'] else 'hero-red-car.png' if 'protecao' in service['slug'] or 'vitrificacao' in service['slug'] else 'detailing-studio.webp'))
         result.append(service)
     return result
 

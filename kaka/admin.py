@@ -40,6 +40,8 @@ def admin_services():
             entry={k:form.get(k,'').strip()[:4000] for k in ['name','eyebrow','summary','description','objective','number']}
             if any(not entry[k] for k in ['name','summary','description']): raise ValueError('Preencha nome, resumo e descrição.')
             entry['slug']=slug
+            entry['image_url']=form.get('image_url','').strip()
+            if entry['image_url'] and not safe_url(entry['image_url'],image=True): raise ValueError('Use um endereço de imagem válido.')
             for key in ['price_min','price_max']:
                 entry[key]=float(form.get(key,'').replace(',','.'))
                 if not math.isfinite(entry[key]) or not 0<=entry[key]<=1000000: raise ValueError('Preço inválido.')
@@ -95,6 +97,10 @@ def admin_pages():
 @app.route('/admin/solicitacoes',methods=['GET','POST'])
 @require_admin('kaka')
 def admin_requests():
+    if request.method=='POST' and request.form.get('kind')=='booking':
+        linked=get_db().execute('SELECT id FROM client_requests WHERE source_id=?',(request.form.get('id'),)).fetchone()
+        if linked:
+            return redirect(url_for('kaka_portal.admin_detail',ident=linked['id']))
     statuses={'new':'Novo','pending_manual_confirmation':'Aguardando confirmação','contacted':'Em atendimento','confirmed':'Confirmado','completed':'Concluído','cancelled':'Cancelado'}
     if request.method=='POST':
         table={'quote':'quote_requests','booking':'booking_requests'}.get(request.form.get('kind'))

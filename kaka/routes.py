@@ -122,6 +122,10 @@ def quote():
 
 @app.route("/agendamento")
 def booking():
+    from accounts import current_user
+    from flask import redirect
+    if not current_user('kaka'):
+        return redirect(url_for('kaka_accounts.login'))
     return render_template("kaka/booking.html", title="Agendamento", today=date.today().isoformat())
 
 
@@ -139,6 +143,9 @@ def policy(kind):
 
 @app.post("/api/quotes")
 def create_quote():
+    from accounts import current_user, verify_csrf
+    if current_user('kaka'):
+        verify_csrf()
     body = request.get_json(silent=True) or request.form.to_dict()
     if clean_text(body.get("company")):
         return jsonify(ok=True)
@@ -158,12 +165,18 @@ def create_quote():
     ident = f"FK-{datetime.now().year}-{uuid.uuid4().hex[:8].upper()}"
     db.execute("""INSERT INTO quote_requests (id,name,phone,email,vehicle_type,brand,model,year,color,service,condition,notes,preferred_date,preferred_period,consent,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
       (ident,clean["name"],phone,clean.get("email") or None,clean["vehicleType"],clean["brand"],clean["model"],clean.get("year") or None,clean.get("color") or None,clean["service"],clean["condition"],clean.get("notes") or None,clean.get("preferredDate") or None,clean.get("preferredPeriod") or None,1,"new",now))
+    from customer_portal import add_request
+    add_request(db,'kaka',ident,clean['service'],clean['brand']+' '+clean['model']+'\n'+clean['condition'],clean.get('preferredDate',''))
     db.commit()
     return jsonify(ok=True,id=ident)
 
 
 @app.post("/api/bookings")
 def create_booking():
+    from accounts import current_user, verify_csrf
+    if not current_user('kaka'):
+        return jsonify(error='Entre na sua conta para solicitar e acompanhar o agendamento.'), 401
+    verify_csrf()
     body = request.get_json(silent=True) or request.form.to_dict()
     if clean_text(body.get("company")):
         return jsonify(ok=True)
@@ -188,8 +201,10 @@ def create_booking():
     ident = f"AG-{datetime.now().year}-{uuid.uuid4().hex[:8].upper()}"
     db.execute("""INSERT INTO booking_requests (id,service,vehicle,preferred_date,preferred_period,name,phone,notes,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)""",
       (ident,clean["service"],clean["vehicle"],clean["preferredDate"],clean["preferredPeriod"],clean["name"],phone,clean.get("notes") or None,"pending_manual_confirmation",now))
+    from customer_portal import add_request
+    add_request(db, 'kaka', ident, clean['service'], clean['vehicle']+'\n'+(clean.get('notes') or ''), clean['preferredDate']+' '+clean['preferredPeriod'])
     db.commit()
-    return jsonify(ok=True,id=ident,status="pending_manual_confirmation")
+    return jsonify(ok=True,id=ident,status="aguardando pagamento")
 
 
 @app.route("/robots.txt")

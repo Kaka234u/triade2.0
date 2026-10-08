@@ -38,12 +38,39 @@ if mode == 'triade':
     def portal_home():
         return render_template('portal/index.html')
 
+from customer_portal import register_portal, init_portal
+from kaka.routes import get_db as kaka_connection
+from sectest.routes import get_db as sectest_connection
+register_portal(app, 'kaka', kaka_prefix, kaka_connection)
+if mode == 'triade':
+    register_portal(app, 'sectest', '/sectest', sectest_connection)
+
+from finance import register_finance, init_finance
+from client_payments import register_payments, init_payments
+from sectest_plans import register_plans, init_plans
+register_finance(app,'kaka',kaka_prefix,kaka_connection)
+register_payments(app,'kaka',kaka_prefix,kaka_connection)
+if mode=='triade':
+    register_finance(app,'sectest','/sectest',sectest_connection)
+    register_payments(app,'sectest','/sectest',sectest_connection)
+    register_plans(app,sectest_connection)
+app.jinja_env.globals['finance_ready']=True
+
 with app.app_context():
     init_accounts(app)
     kaka_init_db()
+    init_portal(kaka_connection())
+    init_finance(kaka_connection())
+    init_payments(kaka_connection())
+    kaka_connection().commit()
     if mode == 'triade':
         vortex7_init_db()
         sectest_init_db()
+        init_portal(sectest_connection())
+        init_finance(sectest_connection())
+        init_payments(sectest_connection())
+        init_plans(sectest_connection())
+        sectest_connection().commit()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)),

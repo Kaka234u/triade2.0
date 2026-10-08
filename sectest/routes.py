@@ -60,6 +60,8 @@ def admin_dashboard():
 
 @app.get('/<path:filename>')
 def page(filename):
+    if filename=='cadastro.html':
+        return redirect(url_for('sectest_plans.diagnostic'))
     if filename == 'admin.html':
         return redirect(url_for('sectest.admin_dashboard'))
     if filename not in {'index.html','sobre.html','servicos.html','cadastro.html','contato.html','style.css','script.js','favicon.svg'}:
@@ -91,6 +93,9 @@ def email_valid(value):
 
 @app.post('/api/cadastro')
 def registration():
+    from accounts import current_user
+    if not current_user('sectest'):
+        return jsonify(error='Entre na sua conta para solicitar e acompanhar o serviço.'), 401
     body = data()
     values = {key: text(body,key,2000 if key=='mensagem' else 200) for key in
               ['empresa','cnpj','funcionarios','responsavel','email','telefone','mensagem']}
@@ -105,6 +110,8 @@ def registration():
     conn = get_db()
     cur = conn.execute('''INSERT INTO registrations (empresa,cnpj,funcionarios,responsavel,email,telefone,servicos,mensagem)
       VALUES (?,?,?,?,?,?,?,?)''', (*[values[k] for k in ['empresa','cnpj','funcionarios','responsavel','email','telefone']],json.dumps(services,ensure_ascii=False),values['mensagem']))
+    from customer_portal import add_request
+    add_request(conn,'sectest','CAD-'+str(cur.lastrowid),', '.join(services) or 'Diagnóstico',values['empresa']+'\n'+values['mensagem'])
     conn.commit()
     return jsonify(message='Cadastro recebido com sucesso.',id=cur.lastrowid), 201
 
