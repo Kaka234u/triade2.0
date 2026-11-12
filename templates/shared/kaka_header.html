@@ -1,0 +1,12 @@
+<header class="brand-header">
+  <a class="brand-home" href="{{url_for('kaka.home')}}" aria-label="FK Káka Autodetail — início">
+    <img src="{{url_for('kaka.static',filename='images/fk-kaka-logo.png')}}" alt="FK Káka Autodetail" width="158" height="52">
+  </a>
+  <nav aria-label="Navegação principal">
+    <a href="{{url_for('kaka.home')}}">Início</a>
+    <a href="{{url_for('kaka.services_page')}}">Serviços</a>
+    <a href="{{url_for('kaka.contact')}}">Contato</a>
+    {% if brand_user('kaka') %}<a href="{{url_for('kaka_portal.index')}}" {% if request.endpoint in ['kaka_portal.index','kaka_portal.detail'] %}aria-current="page"{% endif %}>Meus serviços</a>{% else %}<a href="{{url_for('kaka_accounts.login')}}" {% if mode|default('') in ['login','register'] %}aria-current="page"{% endif %}>Minha conta</a>{% endif %}
+  </nav>
+  <a class="button" href="{{url_for('kaka.booking')}}">Agendar serviço <span aria-hidden="true">↗</span></a>
+</header>

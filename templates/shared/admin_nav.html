@@ -1,4 +1,4 @@
-<aside class="sidebar"><a class="wordmark" href="{{url_for(brand ~ '.admin_dashboard')}}">{{brand_name}}</a><p>Administração</p>
+<aside class="sidebar"><a class="wordmark" href="{{url_for(brand ~ '.admin_dashboard')}}">{% if brand=='kaka' %}<img class="admin-logo" src="{{url_for('kaka.static',filename='images/fk-kaka-logo.png')}}" alt="{{brand_name}}" width="158" height="52">{% else %}{{brand_name}}{% endif %}</a><p>Administração</p>
 <nav aria-label="Navegação administrativa" class="grouped-nav">
 {% for group in admin_menu(brand) %}<details class="nav-group" {% if group.open %}open{% endif %}><summary>{{group.label}}<span aria-hidden="true" class="nav-arrow">›</span></summary><div>{% for item in group["items"] %}<a href="{{item.url}}" {% if item.active %}class="active" aria-current="page"{% endif %}>{{item.label}}</a>{% endfor %}</div></details>{% endfor %}
 </nav><a href="{{url_for(brand ~ ('.home' if brand=='kaka' else '.index'))}}">Abrir site</a>
