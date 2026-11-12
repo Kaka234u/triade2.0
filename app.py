@@ -55,6 +55,8 @@ if mode=='triade':
     register_payments(app,'sectest','/sectest',sectest_connection)
     register_plans(app,sectest_connection)
 app.jinja_env.globals['finance_ready']=True
+from kaka.demo import register_demo
+register_demo(app, kaka_prefix)
 from notifications import init_notifications, register_notifications
 from brand_ui import init_brand_ui
 register_notifications(app,'kaka',kaka_prefix,kaka_connection)
@@ -83,3 +85,4 @@ with app.app_context():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)),
             debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')
+

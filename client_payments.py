@@ -60,8 +60,15 @@ def register_payments(app,brand,prefix,get_db):
         if not user:return redirect(url_for(brand+'_accounts.login'))
         conn=get_db();row=next((r for r in invoice_rows(conn) if r['id']==ident and r['owner_id']==user['id']),None)
         if not row:abort(404)
-        config=settings() if brand=='kaka' else {}
-        demo=brand=='sectest' or config.get('test_mode')=='1'
+        from kaka.demo import active as demo_active, simulate
+        sandbox = brand == 'kaka' and demo_active()
+        config=settings() if brand=='kaka' and not sandbox else {}
+        demo=sandbox or brand=='sectest' or config.get('test_mode')=='1'
+        if request.method=='POST' and sandbox:
+            verify_csrf()
+            simulate(conn, ident, request.form.get('action',''))
+            return redirect(url_for(brand+'_payments.pay',ident=ident))
+        last_simulation = conn.execute('SELECT outcome FROM demo_events WHERE invoice_id=? ORDER BY id DESC LIMIT 1',(ident,)).fetchone() if sandbox else None
         error=None;payload=None;qr=None
         if request.method=='POST':
             verify_csrf()
@@ -100,16 +107,19 @@ def register_payments(app,brand,prefix,get_db):
             except (payments.PaymentError,ValueError):
                 error='Não foi possível concluir esta operação. Confira a configuração de pagamento com a equipe e tente novamente.'
         if row['balance'] and not row['canceled']:
-            if demo:payload='DEMONSTRACAO-'+brand+'-'+str(ident)
+            if demo and not sandbox:payload='DEMONSTRACAO-'+brand+'-'+str(ident)
             elif config.get('pix_key'):
                 payload=payments.pix_for_order(config,'FK'+str(ident),row['balance']/100)
             if payload:qr=payments.qr_svg(payload)
         return render_template('finance/payment.html',brand=brand,brand_name='FK Káka Autodetail' if brand=='kaka' else 'SecTest',admin=False,
-          title='Pagamento',row=row,money=money,qr=qr,payload=payload,demo=demo,mp=bool(config.get('mp_access_token')) and not demo,error=error)
+          title='Pagamento',row=row,money=money,qr=qr,payload=payload,demo=demo,sandbox=sandbox,last_simulation=last_simulation,mp=bool(config.get('mp_access_token')) and not demo,error=error)
 
     @bp.post('/webhook/pagamentos')
     def webhook():
         if brand!='kaka':abort(404)
+        from kaka.demo import active as demo_active
+        if demo_active():
+            return '', 200
         config=settings();token=config.get('mp_access_token')
         if not token or config.get('test_mode')=='1':return '',200
         data=request.get_json(silent=True) or {}
@@ -130,3 +140,4 @@ def register_payments(app,brand,prefix,get_db):
         return '',200
 
     app.register_blueprint(bp,url_prefix=prefix)
+

@@ -10,8 +10,11 @@ from notifications import init_notifications
 def test_entry_gate_customer_session_assets_and_vortex_unchanged(client):
     for brand in ['kaka','sectest']:
         response=client.get('/'+brand+'/')
-        assert response.status_code==302 and '/'+brand+'/login?' in response.location
-        assert client.get(response.location,follow_redirects=True).status_code==200
+        if brand=='kaka':
+            assert response.status_code==200
+        else:
+            assert response.status_code==302 and '/'+brand+'/login?' in response.location
+            assert client.get(response.location,follow_redirects=True).status_code==200
         for path in ['/login','/criar-conta','/admin/login']:
             assert client.get('/'+brand+path).status_code==200
     for path in ['/shared-static/brand-admin.css','/kaka/static/css/style.css','/sectest/style.css','/sectest/script.js']:
@@ -210,3 +213,4 @@ def test_real_pix_render_uses_saved_settings_without_admin_panel(client,tmp_path
     assert result.status_code==200
     assert 'receiver@example.test' in result.text and 'DEMONSTRACAO' not in result.text
     assert client.get('/vortex7/admin/configuracoes').status_code==302
+

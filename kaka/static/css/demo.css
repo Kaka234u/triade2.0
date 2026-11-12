@@ -1,0 +1,9 @@
+body:has(.fk-demo-banner){padding-bottom:100px!important}
+.fk-demo-banner{position:fixed;z-index:10000;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px 22px;background:#231a06;border-top:2px solid #e8b44a;color:#fff;padding:12px 20px;font:14px/1.4 Arial,sans-serif;box-shadow:0 -8px 24px #0005}
+.fk-demo-banner>div{display:grid;gap:4px}.fk-demo-banner strong{color:#ffcf72;font-size:12px;letter-spacing:.08em}.fk-demo-banner span{color:#e2d4b7;font-size:12px}.fk-demo-banner a{color:#fff;text-underline-offset:4px}.fk-demo-banner form{margin:0}
+.fk-demo-banner button,.kaka .fk-demo-banner button{margin:0;background:#ffcf72;color:#211705;border:0;border-radius:4px;padding:10px 14px;min-height:44px;font:700 13px Arial;cursor:pointer}
+body:has(.fk-demo-banner) .notification-widget,body:has(.fk-demo-banner) .whatsapp-float{bottom:110px}
+.demo-steps{padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;counter-reset:demo}
+.demo-steps li{padding:24px;border:1px solid #383838;border-radius:8px;counter-increment:demo}.demo-steps li::before{content:'0' counter(demo);display:block;color:#ef7777;margin-bottom:14px;font-weight:700}
+.demo-reset{border-top:1px solid #444;margin-top:24px;padding-top:20px}.demo-reset summary{font-size:16px}
+@media(max-width:600px){body:has(.fk-demo-banner){padding-bottom:190px!important}.fk-demo-banner{justify-content:flex-start;gap:12px;padding:12px 16px}.fk-demo-banner>div{width:100%}.demo-steps{grid-template-columns:1fr}body:has(.fk-demo-banner) .notification-widget,body:has(.fk-demo-banner) .whatsapp-float{bottom:180px}}

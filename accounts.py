@@ -34,6 +34,10 @@ def verify_csrf():
         abort(400, 'Sessão do formulário expirada. Atualize a página e tente novamente.')
 
 def current_user(brand, admin=False):
+    if brand == 'kaka' and not admin and session.get('kaka_demo_owner'):
+        owner = current_user('kaka', True)
+        if owner and owner['id'] == session['kaka_demo_owner']:
+            return owner
     key = f'{brand}_' + ('admin_session' if admin else 'user_session')
     token = session.get(key)
     if not token:
@@ -53,6 +57,8 @@ def login_user(brand, user, admin=False):
     session.permanent = True
 
 def logout_user(brand, admin=False):
+    if brand == 'kaka':
+        session.pop('kaka_demo_owner', None)
     token = session.pop(f'{brand}_' + ('admin_session' if admin else 'user_session'), None)
     if token:
         db().execute('DELETE FROM account_sessions WHERE token=?', (hashlib.sha256(token.encode()).hexdigest(),))
@@ -129,7 +135,7 @@ def register_accounts(app, brand, prefix):
         error = None
         status = 200
         if current_user(brand):
-            return redirect(url_for(brand + ('.home' if brand=='kaka' else '.index')))
+            return redirect((safe_next(brand,request.args.get('next')) if brand=='kaka' else None) or url_for(brand + ('.home' if brand=='kaka' else '.index')))
         if request.method == 'POST':
             verify_csrf()
             user, error, status = authenticate(brand, request.form.get('email'), request.form.get('password'))
@@ -156,7 +162,7 @@ def register_accounts(app, brand, prefix):
                     db().execute('INSERT INTO accounts (brand,name,email,password_hash,role) VALUES (?,?,?,?,?)',
                         (brand, name, email, generate_password_hash(password), 'customer'))
                     db().commit()
-                    return redirect(url_for(f'{brand}_accounts.login', created=1))
+                    return redirect(url_for(f'{brand}_accounts.login', created=1, **({'next': safe_next(brand,request.args.get('next'))} if brand=='kaka' and safe_next(brand,request.args.get('next')) else {})))
                 except sqlite3.IntegrityError:
                     db().rollback()
                     error = 'Não foi possível criar esta conta. Confira o e-mail ou entre com sua conta existente.'
@@ -232,3 +238,4 @@ def init_accounts(app):
         db().execute('DELETE FROM account_sessions WHERE user_id IN (SELECT id FROM accounts WHERE brand=? AND email=?)', (marca,email.strip().lower()))
         db().commit()
         click.echo('Administrador salvo. Entre pelo endereço /admin da marca.')
+
