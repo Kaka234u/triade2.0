@@ -29,6 +29,12 @@ def get_business():
     from flask import url_for
     row=conn().execute("SELECT value FROM site_settings WHERE key='business'").fetchone()
     result=json.loads(row['value'])
+    from .media import HERO, PROCESS
+    legacy = {'hero_image': {'static/images/hero-red-car.png', '/kaka/static/images/hero-red-car.png'},
+              'page_image': {'static/images/hero-s1000-carbon.webp', '/kaka/static/images/hero-s1000-carbon.webp'}}
+    for key, fallback in [('hero_image', HERO), ('page_image', PROCESS)]:
+        if result.get(key) in legacy[key]:
+            result[key] = fallback
     for key in ('hero_image','page_image'):
         if result[key].startswith('static/'):
             result[key]=url_for('kaka.static',filename=result[key][7:])
@@ -45,7 +51,11 @@ def get_services(include_hidden=False):
         service.update(active=bool(row['active']),position=row['position'])
         service['price_label']=f"{brl(service['price_min'])} – {brl(service['price_max'])}"
         from flask import url_for
-        service['image_url']=service.get('image_url') or url_for('kaka.static',filename='images/'+('hero-s1000-carbon.webp' if 'moto' in service['slug'] else 'hero-red-car.png' if 'protecao' in service['slug'] or 'vitrificacao' in service['slug'] else 'detailing-studio.webp'))
+        from .media import IMAGES, photo
+        ident, alt = IMAGES.get(service['slug'], (6870296, 'Detalhamento automotivo'))
+        custom = service.get('image_url')
+        service['image_url'] = custom or photo(ident)
+        service['image_alt'] = service['name'] if custom else alt
         result.append(service)
     return result
 
@@ -67,3 +77,4 @@ def page_key(path):
     from flask import url_for
     prefix=url_for('kaka.home').rstrip('/')
     return path[len(prefix):] if prefix and path.startswith(prefix+'/') else path
+

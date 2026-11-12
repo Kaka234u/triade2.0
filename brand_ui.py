@@ -18,6 +18,8 @@ def menu(brand):
     finance=[item(brand+'_finance.dashboard','Faturamento e cobranças'),item(brand+'_finance.dashboard','Exportações CSV / XLSX')]
     finance[1]['url']+='#exportacoes';finance[1]['active']=False
     if brand=='sectest':finance.append(item('sectest_plans.contracts','Contratos mensais'))
+    if brand=='kaka':
+        overview.append(item('kaka_demo.index','Modo de testes'))
     groups=[('Visão geral',overview),('Conteúdo',content),('Atendimento',support),('Financeiro',finance)]
     endpoint=request.endpoint or ''
     if endpoint==brand+'_portal.admin_detail':support[-1]['active']=True
@@ -38,6 +40,10 @@ def init_brand_ui(app, brands):
         endpoint=request.endpoint
         if endpoint.startswith(brand+'_accounts.') or endpoint in {
             brand+'.static',brand+'_payments.webhook',brand+'.csrf'}:return
+        if brand == 'kaka' and request.method in ('GET','HEAD') and endpoint in {
+            'kaka.home','kaka.services_page','kaka.service_detail','kaka.gallery',
+            'kaka.about','kaka.contact','kaka.faq','kaka.policy','kaka.robots','kaka.sitemap'}:
+            return
         # SecTest serve CSS/JS pela mesma rota curinga que serve as páginas.
         if brand=='sectest' and endpoint=='sectest.page' and request.view_args.get('filename') in {'style.css','script.js','favicon.svg'}:return
         # Os administradores continuam usando somente as guardas administrativas.
@@ -63,3 +69,4 @@ def init_brand_ui(app, brands):
             response.headers.pop('ETag',None)
             response.headers['Cache-Control']='no-store'
         return response
+

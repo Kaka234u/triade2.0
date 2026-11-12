@@ -20,7 +20,11 @@ app = Blueprint(
 
 def get_db():
     if "kaka_db" not in g:
-        db = sqlite3.connect(DB_PATH)
+        from .demo import database_path, initialize
+        demo_path = database_path()
+        if demo_path and not demo_path.exists():
+            initialize(demo_path)
+        db = sqlite3.connect(demo_path or DB_PATH)
         db.row_factory = sqlite3.Row
         g.kaka_db = db
     return g.kaka_db
@@ -33,9 +37,10 @@ def close_db(exception=None):
         db.close()
 
 
-def init_db():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+def init_db(path=None):
+    path = Path(path or DB_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS quote_requests (
           id TEXT PRIMARY KEY, name TEXT NOT NULL, phone TEXT NOT NULL, email TEXT,
@@ -67,7 +72,8 @@ def service_by_slug(slug):
 
 @app.context_processor
 def globals_for_templates():
-    return {"business": get_business(), "services": get_services(), "whatsapp_url": whatsapp_url}
+    from .media import PROCESS, GALLERY
+    return {"business": get_business(), "services": get_services(), "whatsapp_url": whatsapp_url, "process_image": PROCESS, "gallery_images": GALLERY}
 
 
 @app.route("/")
@@ -222,3 +228,4 @@ def sitemap():
 
 
 from . import admin  # registra as rotas antes do blueprint ser montado
+

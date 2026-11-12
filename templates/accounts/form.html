@@ -16,5 +16,6 @@
 {% if mode=='register' %}<label>Nome<input name="name" required maxlength="120" autocomplete="name" value="{{request.form.get('name','')}}"></label>{% endif %}
 <label>E-mail<input type="email" name="email" required maxlength="254" autocomplete="username" value="{{request.form.get('email','')}}"></label><label>Senha<input type="password" name="password" required {{'minlength=10' if mode=='register'}} maxlength="256" autocomplete="{{'new-password' if mode=='register' else 'current-password'}}"></label>
 {% if mode=='register' %}<small>Use pelo menos 10 caracteres.</small><label>Confirme a senha<input type="password" name="confirm_password" required minlength="10" maxlength="256" autocomplete="new-password"></label>{% endif %}<button>{{'Criar conta' if mode=='register' else 'Entrar'}}</button></form>
-{% if mode!='admin' %}<p><a href="{{url_for(brand ~ '_accounts.' ~ ('login' if mode=='register' else 'register'))}}">{{'Já tenho conta' if mode=='register' else 'Criar minha conta'}}</a></p>{% endif %}{% endif %}
+{% if mode!='admin' %}<p><a href="{{url_for(brand ~ '_accounts.' ~ ('login' if mode=='register' else 'register'), **({'next': request.args.get('next')} if brand=='kaka' and request.args.get('next') else {}))}}">{{'Já tenho conta' if mode=='register' else 'Criar minha conta'}}</a></p>{% endif %}{% endif %}
 <a class="back" href="{{url_for(brand ~ ('.home' if brand=='kaka' else '.index'))}}">← Voltar ao site</a></main></div></body></html>
+

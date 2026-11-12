@@ -118,6 +118,10 @@ def register_finance(app,brand,prefix,get_db):
     def request_invoices(ident):
         from accounts import verify_csrf
         admin=current_user(brand,True);customer=current_user(brand)
+        if brand=='kaka':
+            from kaka.demo import active as demo_active
+            if demo_active() and request.args.get('view')=='customer':
+                admin=None
         if not admin and not customer:return redirect(url_for(brand+'_accounts.login'))
         conn=get_db();item=conn.execute('SELECT * FROM client_requests WHERE id=?',(ident,)).fetchone()
         if not item or (not admin and item['owner_id']!=customer['id']):abort(404)
@@ -159,6 +163,9 @@ def register_finance(app,brand,prefix,get_db):
                     if paid_on>date.today().isoformat():raise ValueError('Recebimentos não podem ter data futura.')
                     if method not in ('pix','dinheiro','cartao','boleto','demonstracao') or not ref or len(ref)>80:raise ValueError('Dados inválidos.')
                     if brand=='sectest':method='demonstracao'
+                    if brand=='kaka':
+                        from kaka.demo import active as demo_active
+                        if demo_active():method='demonstracao'
                     conn.execute('INSERT OR IGNORE INTO receipts(invoice_id,amount,method,paid_on,actor,reference) VALUES (?,?,?,?,?,?)',
                       (ident,amount,method,paid_on,current_user(brand,True)['email'],ref))
                 elif action=='reverse':
@@ -173,3 +180,4 @@ def register_finance(app,brand,prefix,get_db):
         return render('invoice.html',title='Cobrança #'+str(ident),row=row,receipts=receipts,error=error,nonce=secrets.token_hex(16),today=date.today().isoformat())
 
     app.register_blueprint(bp,url_prefix=prefix)
+
