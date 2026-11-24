@@ -61,12 +61,12 @@ def register_payments(app,brand,prefix,get_db):
         conn=get_db();row=next((r for r in invoice_rows(conn) if r['id']==ident and r['owner_id']==user['id']),None)
         if not row:abort(404)
         from kaka.demo import active as demo_active, simulate
-        sandbox = brand == 'kaka' and demo_active()
+        sandbox = demo_active(brand)
         config=settings() if brand=='kaka' and not sandbox else {}
         demo=sandbox or brand=='sectest' or config.get('test_mode')=='1'
         if request.method=='POST' and sandbox:
             verify_csrf()
-            simulate(conn, ident, request.form.get('action',''))
+            simulate(conn, ident, request.form.get('action',''), brand)
             return redirect(url_for(brand+'_payments.pay',ident=ident))
         last_simulation = conn.execute('SELECT outcome FROM demo_events WHERE invoice_id=? ORDER BY id DESC LIMIT 1',(ident,)).fetchone() if sandbox else None
         error=None;payload=None;qr=None

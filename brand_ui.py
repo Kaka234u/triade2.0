@@ -18,8 +18,7 @@ def menu(brand):
     finance=[item(brand+'_finance.dashboard','Faturamento e cobranças'),item(brand+'_finance.dashboard','Exportações CSV / XLSX')]
     finance[1]['url']+='#exportacoes';finance[1]['active']=False
     if brand=='sectest':finance.append(item('sectest_plans.contracts','Contratos mensais'))
-    if brand=='kaka':
-        overview.append(item('kaka_demo.index','Modo de testes'))
+    overview.append(item(brand + '_demo.index','Modo de testes'))
     groups=[('Visão geral',overview),('Conteúdo',content),('Atendimento',support),('Financeiro',finance)]
     endpoint=request.endpoint or ''
     if endpoint==brand+'_portal.admin_detail':support[-1]['active']=True

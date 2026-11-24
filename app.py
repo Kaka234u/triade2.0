@@ -33,6 +33,8 @@ if mode == 'triade':
     app.register_blueprint(vortex7_bp, url_prefix='/vortex7')
     app.register_blueprint(sectest_bp, url_prefix='/sectest')
     register_accounts(app, 'sectest', '/sectest')
+    from sectest.demo import bp as sectest_demo
+    app.register_blueprint(sectest_demo, url_prefix='/sectest')
 
     @app.route('/')
     def portal_home():

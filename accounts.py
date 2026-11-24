@@ -34,9 +34,9 @@ def verify_csrf():
         abort(400, 'Sessão do formulário expirada. Atualize a página e tente novamente.')
 
 def current_user(brand, admin=False):
-    if brand == 'kaka' and not admin and session.get('kaka_demo_owner'):
-        owner = current_user('kaka', True)
-        if owner and owner['id'] == session['kaka_demo_owner']:
+    if not admin and session.get(brand + '_demo_owner'):
+        owner = current_user(brand, True)
+        if owner and owner['id'] == session[brand + '_demo_owner']:
             return owner
     key = f'{brand}_' + ('admin_session' if admin else 'user_session')
     token = session.get(key)
@@ -57,8 +57,7 @@ def login_user(brand, user, admin=False):
     session.permanent = True
 
 def logout_user(brand, admin=False):
-    if brand == 'kaka':
-        session.pop('kaka_demo_owner', None)
+    session.pop(brand + '_demo_owner', None)
     token = session.pop(f'{brand}_' + ('admin_session' if admin else 'user_session'), None)
     if token:
         db().execute('DELETE FROM account_sessions WHERE token=?', (hashlib.sha256(token.encode()).hexdigest(),))
@@ -254,4 +253,5 @@ def init_accounts(app):
             raise click.ClickException('Informe um e-mail válido.')
         save_admin(marca, email, password)
         click.echo('Administrador salvo. Entre pelo endereço /admin da marca.')
+
 

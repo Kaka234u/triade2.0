@@ -12,4 +12,4 @@
 </nav>
 <form method="post" action="{{url_for(brand ~ '_accounts.logout')}}"><input type="hidden" name="csrf_token" value="{{brand_csrf()}}"><button class="secondary">Sair da conta</button></form>
 </div>{% endif %}
-<main class="admin-main" id="conteudo"><p class="eyebrow">{{'GESTÃO DE ATENDIMENTOS' if admin else 'ACOMPANHE SEU ATENDIMENTO'}}</p><h1>{{title}}</h1>{% if error %}<p class="notice error" role="alert">{{error}}</p>{% endif %}{% block content %}{% endblock %}</main></div></body></html>
+<main class="admin-main" id="conteudo">{% if brand=='sectest' and sectest_demo_active() %}<p class="notice" role="status">Modo de testes ativo · <a href="{{url_for('sectest_demo.index')}}">Gerenciar demonstração</a></p>{% endif %}<p class="eyebrow">{{'GESTÃO DE ATENDIMENTOS' if admin else 'ACOMPANHE SEU ATENDIMENTO'}}</p><h1>{{title}}</h1>{% if error %}<p class="notice error" role="alert">{{error}}</p>{% endif %}{% block content %}{% endblock %}</main></div></body></html>

@@ -5,11 +5,11 @@ from flask import abort, current_app, has_request_context, redirect, render_temp
 from accounts import current_user, require_admin
 
 
-def active():
-    if not has_request_context() or not session.get('kaka_demo_owner'):
+def active(brand='kaka'):
+    if not has_request_context() or not session.get(brand + '_demo_owner'):
         return False
-    admin = current_user('kaka', True)
-    return bool(admin and session['kaka_demo_owner'] == admin['id'])
+    admin = current_user(brand, True)
+    return bool(admin and session[brand + '_demo_owner'] == admin['id'])
 
 
 def database_path():
@@ -35,24 +35,24 @@ def initialize(path):
         conn.execute('CREATE TABLE IF NOT EXISTS demo_events (id INTEGER PRIMARY KEY, invoice_id INTEGER, outcome TEXT, created_at TEXT DEFAULT (datetime(\'now\')))')
 
 
-def simulate(conn, ident, action):
+def simulate(conn, ident, action, brand='kaka'):
     """Serialize repeated submissions; approval only credits the remaining balance."""
     from datetime import date
     from finance import invoice_rows
     import secrets
-    if not active():
+    if not active(brand):
         abort(403)
     conn.execute('BEGIN IMMEDIATE')
     try:
         row = next((r for r in invoice_rows(conn) if r['id'] == ident), None)
-        if not row or row['owner_id'] != session['kaka_demo_owner']:
+        if not row or row['owner_id'] != session[brand + '_demo_owner']:
             abort(404)
         if row['canceled']:
             abort(400, 'Esta cobrança foi cancelada.')
         if action == 'simulate_paid':
             if row['balance']:
                 conn.execute('INSERT INTO receipts(invoice_id,amount,method,paid_on,actor,reference) VALUES (?,?,?,?,?,?)',
-                    (ident,row['balance'],'demonstracao',date.today().isoformat(),'Simulador FK','demo:'+secrets.token_hex(16)))
+                    (ident,row['balance'],'demonstracao',date.today().isoformat(),('Simulador FK' if brand == 'kaka' else 'Simulador SecTest'),'demo:'+secrets.token_hex(16)))
         elif action == 'simulate_refund':
             conn.execute('UPDATE receipts SET reversed=1 WHERE invoice_id=? AND reversed=0', (ident,))
         elif action not in {'simulate_pending', 'simulate_declined'}:

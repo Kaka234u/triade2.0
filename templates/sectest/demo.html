@@ -1,0 +1,15 @@
+{% extends 'portal_clients/base.html' %}
+{% block content %}
+<section class="panel">
+<p>Experimente os planos, os pedidos e o faturamento com dados de demonstração.</p>
+<form method="post">
+<input type="hidden" name="csrf_token" value="{{ brand_csrf() }}">
+{% if enabled %}
+<p><a href="{{ url_for('sectest_plans.plans') }}">Escolher um plano como cliente</a> · <a href="{{ url_for('sectest_portal.admin_list') }}">Atender solicitações</a> · <a href="{{ url_for('sectest_finance.dashboard') }}">Ver faturamento</a></p>
+<button name="action" value="stop">Sair do modo de testes</button>
+<button class="secondary" name="action" value="reset" onclick="return confirm('Apagar os dados da sua demonstração?')">Reiniciar dados de teste</button>
+{% else %}
+<button name="action" value="start">Ativar modo de testes</button>
+{% endif %}
+</form></section>
+{% endblock %}

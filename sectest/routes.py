@@ -14,7 +14,8 @@ app = Blueprint('sectest', __name__)
 
 def get_db():
     if 'sectest_db' not in g:
-        g.sectest_db = sqlite3.connect(DB_PATH)
+        from .demo import database_path
+        g.sectest_db = sqlite3.connect(database_path() or DB_PATH)
         g.sectest_db.row_factory = sqlite3.Row
     return g.sectest_db
 
@@ -24,9 +25,10 @@ def close_db(error=None):
     if conn is not None:
         conn.close()
 
-def init_db():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(DB_PATH) as conn:
+def init_db(path=None):
+    target = path or DB_PATH
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(target) as conn:
         conn.executescript('''
         CREATE TABLE IF NOT EXISTS registrations (id INTEGER PRIMARY KEY AUTOINCREMENT,
           empresa TEXT NOT NULL,cnpj TEXT,funcionarios TEXT NOT NULL,responsavel TEXT NOT NULL,
@@ -39,7 +41,7 @@ def init_db():
         ''')
         # Preserva os registros recebidos no ZIP, sem importar senhas ou segredos do Node.
         seed = BASE_DIR / 'importacao_inicial.json'
-        if seed.exists() and not conn.execute("SELECT 1 FROM migrations WHERE name='node_import'").fetchone():
+        if path is None and seed.exists() and not conn.execute("SELECT 1 FROM migrations WHERE name='node_import'").fetchone():
             source = json.loads(seed.read_text(encoding='utf-8'))
             columns = {
                 'registrations':['id','empresa','cnpj','funcionarios','responsavel','email','telefone','servicos','mensagem','created_at'],
