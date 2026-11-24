@@ -202,6 +202,13 @@ def register_accounts(app, brand, prefix):
 
     app.register_blueprint(bp, url_prefix=prefix)
 
+def save_admin(brand, email, password):
+    db().execute('''INSERT INTO accounts (brand,name,email,password_hash,role) VALUES (?,?,?,?, 'admin')
+      ON CONFLICT(brand,email) DO UPDATE SET password_hash=excluded.password_hash,role='admin' ''',
+      (brand, 'Administrador', email.strip().lower(), generate_password_hash(password)))
+    db().execute('DELETE FROM account_sessions WHERE user_id IN (SELECT id FROM accounts WHERE brand=? AND email=?)', (brand,email.strip().lower()))
+    db().commit()
+
 def init_accounts(app):
     AUTH_DB.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(AUTH_DB) as conn:
@@ -213,6 +220,19 @@ def init_accounts(app):
         CREATE TABLE IF NOT EXISTS login_attempts (bucket TEXT NOT NULL, created REAL NOT NULL);
         CREATE INDEX IF NOT EXISTS attempt_bucket ON login_attempts(bucket,created);
         ''')
+    password = os.environ.get('SECTEST_ADMIN_PASSWORD')
+    if password and os.environ.get('SITE_MODE', 'triade') == 'triade':
+        if not 10 <= len(password) <= 256:
+            raise ValueError('SECTEST_ADMIN_PASSWORD deve ter entre 10 e 256 caracteres.')
+        email = 'joao.dias2527@gmail.com'
+        with db():
+            db().execute('BEGIN IMMEDIATE')
+            account = db().execute(
+                'SELECT role, password_hash FROM accounts WHERE brand=? AND email=?',
+                ('sectest', email),
+            ).fetchone()
+            if not account or account['role'] != 'admin' or not check_password_hash(account['password_hash'], password):
+                save_admin('sectest', email, password)
     app.config['DUMMY_PASSWORD_HASH'] = generate_password_hash(secrets.token_urlsafe(32))
     app.jinja_env.globals.update(brand_csrf=csrf_token, brand_user=current_user)
 
@@ -232,10 +252,6 @@ def init_accounts(app):
             raise click.ClickException('A senha deve ter entre 10 e 256 caracteres.')
         if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
             raise click.ClickException('Informe um e-mail válido.')
-        db().execute('''INSERT INTO accounts (brand,name,email,password_hash,role) VALUES (?,?,?,?, 'admin')
-          ON CONFLICT(brand,email) DO UPDATE SET password_hash=excluded.password_hash,role='admin' ''',
-          (marca, 'Administrador', email.strip().lower(), generate_password_hash(password)))
-        db().execute('DELETE FROM account_sessions WHERE user_id IN (SELECT id FROM accounts WHERE brand=? AND email=?)', (marca,email.strip().lower()))
-        db().commit()
+        save_admin(marca, email, password)
         click.echo('Administrador salvo. Entre pelo endereço /admin da marca.')
 
