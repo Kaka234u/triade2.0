@@ -3,6 +3,7 @@ import secrets
 from datetime import date
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from accounts import current_user, require_admin, verify_csrf
+from kaka.demo import active as demo_active
 from finance import cents,money
 from customer_portal import add_request
 
@@ -59,7 +60,17 @@ def register_plans(app,get_db):
                         'Visitas/dia: {visits}; usuários: {people}; sites: {sites}; receita mensal com anúncios: R$ {revenue}; ataque anterior: {attacked}; dados sensíveis: {sensitive}'.format(**answers))
                     conn.execute('INSERT INTO plan_requests(request_id,plan_slug,price,period,answers) VALUES (?,?,?,?,?)',
                       (ident,selected['slug'],result or 0,selected['period'],json.dumps(answers)))
-                    conn.execute('UPDATE client_requests SET total_cents=? WHERE id=?',(result or 0,ident));conn.commit()
+                    conn.execute('UPDATE client_requests SET total_cents=? WHERE id=?',(result or 0,ident))
+                    if demo_active('sectest') and result:
+                        today = date.today()
+                        invoice = conn.execute(
+                            'INSERT INTO invoices(request_id,description,total,due,reference) VALUES (?,?,?,?,?)',
+                            (ident, selected['name'], result, today.isoformat(), 'ST-DEMO-' + str(ident)),
+                        )
+                        if selected['period'] == 'mensal':
+                            conn.execute('INSERT INTO monthly_issues VALUES (?,?,?)',
+                                         (ident, today.strftime('%Y-%m'), invoice.lastrowid))
+                    conn.commit()
                     return redirect(url_for('sectest_portal.detail',ident=ident,enviado=1))
             except (ValueError,TypeError) as exc:error=str(exc) or 'Revise os campos.'
         return render('diagnostic.html',title='Avaliação inicial',rows=rows,admin=False,error=error,result=result,selected=selected)
