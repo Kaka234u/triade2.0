@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import (Blueprint, Response, abort, flash, redirect, render_template, request, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from . import payments
 from .common import (BRT, PHOTO_EXTS, PRODUCT_IMG_DIR, admin_required, current_admin, fmt_datetime, get_db,
@@ -365,6 +366,9 @@ def _save_product_image(file_storage, base):
     ext = _sniff_image(data[:16])
     if not ext:
         raise ValueError("Formato de imagem inválido. Use JPG, PNG ou WEBP.")
+    base = secure_filename(base)
+    if not base:
+        raise ValueError("Nome de arquivo inválido.")
     os.makedirs(PRODUCT_IMG_DIR, exist_ok=True)
     for old_ext in PHOTO_EXTS:  # remove versões antigas para a nova foto valer
         old = os.path.join(PRODUCT_IMG_DIR, f"{base}.{old_ext}")
