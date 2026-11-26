@@ -27,7 +27,7 @@
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(sending||!form.reportValidity())return;
     const input=form.elements.message,value=input.value,button=form.querySelector('button');sending=true;button.disabled=true;status.textContent='Enviando…';
-    try{const r=await fetch(form.action||location.href,{method:'POST',headers:{Accept:'application/json'},body:new FormData(form)});const data=await r.json().catch(()=>({error:'Sessão expirada ou resposta indisponível. Seu texto foi mantido.'}));if(!r.ok||!data.ok)throw new Error(data.error||'Não foi possível enviar.');if(input.value===value)input.value='';status.textContent='Mensagem enviada.';await refresh();}
+    try{const r=await fetch(form.getAttribute('action') || location.href,{method:'POST',headers:{Accept:'application/json'},body:new FormData(form)});const data=await r.json().catch(()=>({error:'Sessão expirada ou resposta indisponível. Seu texto foi mantido.'}));if(!r.ok||!data.ok)throw new Error(data.error||'Não foi possível enviar.');if(input.value===value)input.value='';status.textContent='Mensagem enviada.';await refresh();}
     catch(error){status.textContent=error.message||'Não foi possível enviar. Seu texto foi mantido.';}
     finally{sending=false;button.disabled=false;}
   });
