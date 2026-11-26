@@ -24,3 +24,35 @@
 .fk-shortcuts a{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee;color:#7e1724;text-decoration:none}
 .fk-history th,.fk-history td{color:#29292e;border-color:#ddd}.fk-history th{background:#f5f4f4}
 @media(max-width:760px){.kaka .auth-shell{grid-template-columns:1fr;width:calc(100% - 24px);margin:18px auto}.kaka .auth-intro{padding:20px}.kaka .auth-intro h2{margin:.25em 0}.kaka .auth-intro .auth-benefits{display:none}.kaka .auth-intro .eyebrow{margin:0}.fk-workspace{grid-template-columns:1fr}.fk-metrics{gap:6px}.fk-stat{padding:12px 7px}.fk-stat h2{font-size:clamp(11px,3vw,15px)}}
+
+/* Superfícies de gestão compartilhadas pelo catálogo, atendimento e financeiro. */
+.kaka.management-page { --panel: #fff; --bg: #f1f1f2; }
+.kaka.management-page .admin-main .panel,
+.kaka.management-page .admin-main .empty-state {
+  background: #fff; color: #202126; border: 1px solid #dedee1;
+  border-radius: 18px; padding: clamp(18px, 2vw, 28px);
+}
+.kaka.management-page .admin-main :is(label,summary,th,td) { color: #333239; }
+.kaka.management-page .admin-main :is(p,small) { color: #54545d; }
+.kaka.management-page .admin-main .eyebrow { color: #971c2a; }
+.kaka.management-page .admin-main :is(input,textarea,select) {
+  color: #222228; background: #faf9fa; border: 1px solid #babac2;
+  border-radius: 9px; accent-color: #ae1929;
+}
+.kaka.management-page .admin-main input:read-only:not([type=checkbox]):not([type=file]) { background: #f0eff1; }
+.kaka.management-page .admin-main :is(button,.button) { border-radius: 10px; }
+.kaka.management-page .admin-main th { background: #f5f4f5; }
+.kaka.management-page .admin-main :is(th,td) { border-color: #e2dfe1; }
+.kaka.management-page .admin-main .message { background: #f6f5f6; border-color: #dedbe0; }
+.kaka.management-page .admin-main .message.staff { background: #fff1f2; border-color: #e3b7bc; }
+.kaka.management-page .admin-main .notice { background: #edf6ef; border-color: #9fc3aa; color: #244932; }
+.kaka.management-page .admin-main .error { background: #fff0f1; border-color: #d89098; color: #851624; }
+.kaka.management-page .admin-main .pill { background: #faeaec; color: #8d1625; }
+.kaka.management-page .sidebar .nav-group a.active { background: #4c2930; border-left-color: #ff717d; }
+.kaka.management-page .chart-bar { background: #b81929; border-radius: 8px; }
+.kaka.management-page .notification-panel { background: #fff; color: #202126; border-color: #dedee1; }
+.kaka.management-page .notification-panel :is(p,small) { color: #53535c; }
+@media (max-width:760px) {
+  .kaka.management-page .request-grid { grid-template-columns: minmax(0,1fr); }
+  .kaka.management-page .admin-main .table-wrap { max-width:100%; overflow-x:auto; }
+}

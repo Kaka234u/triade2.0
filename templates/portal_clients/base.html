@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{title}} | {{brand_name}}</title><link rel="stylesheet" href="{{url_for('static',filename='brand-admin.css')}}"><link rel="stylesheet" href="{{url_for('static',filename='operations.css')}}"></head><body class="{{brand}} {{'management-page' if admin else 'customer-page'}}">
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{title}} | {{brand_name}}</title><link rel="stylesheet" href="{{url_for('static',filename='brand-admin.css')}}"><link rel="stylesheet" href="{{url_for('static',filename='operations.css')}}">{% if brand=='kaka' and admin %}<link rel="stylesheet" href="{{url_for('static',filename='fk-studio.css')}}">{% endif %}</head><body class="{{brand}} {{'management-page' if admin else 'customer-page'}}">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 {% if brand=='kaka' and not admin %}{% include 'shared/kaka_header.html' %}{% endif %}
 <div class="{{'admin-layout' if admin else 'customer-layout'}}">
