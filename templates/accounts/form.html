@@ -1,10 +1,10 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{brand_name}} — Acesso</title><link rel="stylesheet" href="{{url_for('static',filename='brand-admin.css')}}"></head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{brand_name}} — Acesso</title><link rel="stylesheet" href="{{url_for('static',filename='brand-admin.css')}}">{% if brand=='kaka' %}<link rel="stylesheet" href="{{url_for('static',filename='fk-studio.css')}}">{% endif %}</head>
 <body class="auth-page {{brand}}">
 {% if brand=='kaka' %}{% include 'shared/kaka_header.html' %}{% endif %}
 <div class="auth-shell">
 {% if brand=='kaka' %}<section class="auth-intro" aria-label="FK Káka Autodetail">
 <p class="eyebrow">ESTÉTICA AUTOMOTIVA · FORTALEZA</p>
-<h2>Cuidado em<br> cada <span>detalhe.</span></h2>
+<h2>{{'Gestão da' if mode=='admin' else 'Cuidados para'}}<br><span>{{'oficina.' if mode=='admin' else 'seu carro.'}}</span></h2>
 <p>{{'Organize os atendimentos e cuide de cada etapa da experiência do cliente.' if mode=='admin' else 'O cuidado com seu carro continua por aqui. Agende um serviço e acompanhe tudo em um só lugar.'}}</p>
 <ul class="auth-benefits"><li><span>01</span>{{'Atendimentos e conversas' if mode=='admin' else 'Solicite seu agendamento'}}</li><li><span>02</span>{{'Serviços e conteúdo do site' if mode=='admin' else 'Acompanhe a confirmação'}}</li><li><span>03</span>{{'Cobranças e faturamento' if mode=='admin' else 'Converse com nossa equipe'}}</li></ul>
 </section>{% endif %}
