@@ -56,3 +56,12 @@
   .kaka.management-page .request-grid { grid-template-columns: minmax(0,1fr); }
   .kaka.management-page .admin-main .table-wrap { max-width:100%; overflow-x:auto; }
 }
+
+.fk-finance-charts { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:16px; }
+.fk-payment-track, .fk-status-track { display:block; overflow:hidden; border-radius:8px; background:#dedde1; }
+.fk-payment-track { height:24px; margin:1.25rem 0; }
+.fk-payment-track span, .fk-status-track span { display:block; height:100%; background:#c00000; }
+.fk-finance-legend > div, .fk-status-bars > div { display:flex; justify-content:space-between; gap:12px; margin:.65rem 0; }
+.fk-finance-legend dd, .fk-status-bars dd { margin:0; font-weight:700; }
+.fk-status-bars > div { flex-wrap:wrap; position:relative; padding-bottom:10px; }
+.fk-status-track { position:absolute; bottom:0; left:0; width:100%; height:5px; }
