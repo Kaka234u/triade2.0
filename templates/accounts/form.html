@@ -1,4 +1,24 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{brand_name}} — Acesso</title><link rel="stylesheet" href="{{url_for('static',filename='brand-admin.css')}}">{% if brand=='kaka' %}<link rel="stylesheet" href="{{url_for('static',filename='fk-studio.css')}}">{% endif %}</head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{brand_name}} — Acesso</title><link rel="stylesheet" href="{{url_for('static',filename='brand-admin.css')}}">{% if brand=='kaka' %}<link rel="stylesheet" href="{{url_for('static',filename='fk-studio.css')}}">{% endif %}{% if brand=='kaka' and mode in ['login','register'] %}
+<style>
+.kaka .auth-intro { background-color: #991a2b; background-image: linear-gradient(145deg, #b91930, #781525 65%, #351119); }
+@media (min-width: 801px) {
+  .kaka .auth-shell { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .kaka .auth-intro, .kaka .auth-card { grid-row: 1; }
+  .kaka .auth-intro { grid-column: {{ 2 if mode=='login' else 1 }}; }
+  .kaka .auth-card { grid-column: {{ 1 if mode=='login' else 2 }}; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  .auth-intro { view-transition-name: fk-intro; }
+  .auth-card { view-transition-name: fk-form; }
+  ::view-transition-group(fk-intro), ::view-transition-group(fk-form) {
+    animation-duration: 480ms;
+    animation-timing-function: cubic-bezier(.22,.75,.25,1);
+  }
+  ::view-transition-group(fk-intro) { z-index: 2; }
+}
+</style>
+{% endif %}</head>
 <body class="auth-page {{brand}}">
 {% if brand=='kaka' %}{% include 'shared/kaka_header.html' %}{% endif %}
 <div class="auth-shell">
