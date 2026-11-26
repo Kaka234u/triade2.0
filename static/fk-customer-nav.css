@@ -19,7 +19,7 @@
 }
 .fk-customer-header nav a:last-child { background: #ae1828; color: white; }
 .fk-customer-header nav a:hover, .fk-customer-header nav a:focus-visible { background: #48232a; color: white; }
-.fk-customer-header nav a[aria-current] { box-shadow: inset 0 -3px #ff8592; }
+.fk-customer-header nav a[aria-current] { box-shadow: inset 0 -3px var(--red, #c00000); }
 @media (max-width: 840px) {
   .fk-customer-header { flex-direction: column; align-items: stretch; gap: 2px; padding: 4px 8px; }
   .fk-customer-header > a { align-self: flex-start; }
