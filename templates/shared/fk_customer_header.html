@@ -1,0 +1,19 @@
+{% set customer = brand_user('kaka') %}
+{% set links = [
+  ('kaka.home','Início'), ('kaka.services_page','Serviços'), ('kaka.gallery','Galeria'),
+  ('kaka.about','Sobre'), ('kaka.contact','Contato'), ('kaka.quote','Orçamento'),
+  ('kaka_portal.index' if customer else 'kaka_accounts.login','Meus serviços' if customer else 'Minha conta'),
+  ('kaka.booking','Agendar serviço')
+] %}
+<header class="fk-customer-header">
+  <a href="{{ url_for('kaka.home') }}" aria-label="FK Kaká Autodetail — início">
+    <img src="{{ url_for('kaka.static', filename='images/fk-kaka-logo.png') }}" alt="FK Kaká Autodetail" width="124" height="42">
+  </a>
+  <nav aria-label="Navegação principal">
+    {% for endpoint, label in links %}
+      <a href="{{ url_for(endpoint) }}"{% if request.endpoint == endpoint or
+        (endpoint == 'kaka_portal.index' and request.endpoint == 'kaka_portal.detail') or
+        (endpoint == 'kaka_accounts.login' and request.endpoint == 'kaka_accounts.register') %} aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+</header>

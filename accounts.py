@@ -47,6 +47,15 @@ def current_user(brand, admin=False):
         (hashlib.sha256(token.encode()).hexdigest(), time.time(), brand)).fetchone()
     return row if row and (not admin or row['role'] == 'admin') else None
 
+def fk_customer_name():
+    user = current_user('kaka')
+    if user is None:
+        return ''
+    row = db().execute('SELECT name FROM fk_customer_names WHERE user_id=?', (user['id'],)).fetchone()
+    if row:
+        return row['name']
+    return user['name'] if user['role'] == 'customer' else ''
+
 def login_user(brand, user, admin=False):
     logout_user(brand, admin)
     token = secrets.token_urlsafe(32)
@@ -167,6 +176,21 @@ def register_accounts(app, brand, prefix):
                     error = 'Não foi possível criar esta conta. Confira o e-mail ou entre com sua conta existente.'
         return page('register', error=error), 400 if error else 200
 
+    if brand == 'kaka':
+        @bp.post('/conta/nome')
+        def preferred_name():
+            user = current_user(brand)
+            if user is None:
+                return redirect(url_for('kaka_accounts.login'))
+            verify_csrf()
+            name = request.form.get('name', '').strip()
+            if not 1 <= len(name) <= 120:
+                abort(400, 'Informe um nome de até 120 caracteres.')
+            db().execute('INSERT INTO fk_customer_names (user_id,name) VALUES (?,?) '
+                         'ON CONFLICT(user_id) DO UPDATE SET name=excluded.name', (user['id'], name))
+            db().commit()
+            return redirect(url_for('kaka_portal.index'))
+
     @bp.route('/conta')
     def account():
         user = current_user(brand)
@@ -215,6 +239,7 @@ def init_accounts(app):
         CREATE TABLE IF NOT EXISTS accounts (id INTEGER PRIMARY KEY, brand TEXT NOT NULL,
           name TEXT NOT NULL, email TEXT NOT NULL, password_hash TEXT NOT NULL,
           role TEXT NOT NULL DEFAULT 'customer', UNIQUE(brand,email));
+        CREATE TABLE IF NOT EXISTS fk_customer_names (user_id INTEGER PRIMARY KEY, name TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS account_sessions (token TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires REAL NOT NULL);
         CREATE TABLE IF NOT EXISTS login_attempts (bucket TEXT NOT NULL, created REAL NOT NULL);
         CREATE INDEX IF NOT EXISTS attempt_bucket ON login_attempts(bucket,created);
@@ -233,7 +258,7 @@ def init_accounts(app):
             if not account or account['role'] != 'admin' or not check_password_hash(account['password_hash'], password):
                 save_admin('sectest', email, password)
     app.config['DUMMY_PASSWORD_HASH'] = generate_password_hash(secrets.token_urlsafe(32))
-    app.jinja_env.globals.update(brand_csrf=csrf_token, brand_user=current_user)
+    app.jinja_env.globals.update(brand_csrf=csrf_token, brand_user=current_user, fk_customer_name=fk_customer_name)
 
     @app.teardown_appcontext
     def close_accounts(error=None):
