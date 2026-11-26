@@ -685,6 +685,13 @@
     html{scroll-behavior:auto;}
   }
 </style>
+<link rel="manifest" href="/shared-static/triade.webmanifest">
+<meta name="theme-color" content="#101114">
+<style>
+header a.btn-primary:is(:link,:visited,:hover,:focus,:active) { background: #f5f5f5; color: #101114; }
+header a.btn-primary:focus-visible { outline: 3px solid #68dd99; outline-offset: 3px; }
+#installTriade[hidden] { display:none; }
+</style>
 </head>
 <body>
 
@@ -920,7 +927,25 @@
       <span>Feito para esporte, estética e segurança digital.</span>
     </div>
   </div>
+  <button class="btn btn-primary" type="button" id="installTriade" hidden>Instalar Tríade</button>
 </footer>
+<script>
+  const installButton = document.getElementById('installTriade');
+  let installPrompt;
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    installPrompt = event;
+    installButton.hidden = false;
+  });
+  installButton.addEventListener('click', async () => {
+    if (!installPrompt) return;
+    const prompt = installPrompt;
+    installPrompt = null;
+    installButton.hidden = true;
+    await prompt.prompt();
+  });
+  window.addEventListener('appinstalled', () => { installButton.hidden = true; });
+</script>
 
 <script>
   const header = document.getElementById('siteHeader');
